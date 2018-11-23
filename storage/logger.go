@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/spf13/afero"
 	"os"
 	"time"
@@ -12,7 +13,7 @@ type reqLogger struct {
 	base *afero.Afero
 	root *afero.Afero
 
-	index afero.File
+	indexFile afero.File
 }
 
 func (log *reqLogger) Start() error {
@@ -29,7 +30,7 @@ func (log *reqLogger) Start() error {
 		return err
 	}
 
-	log.index = file
+	log.indexFile = file
 	return nil
 }
 
@@ -37,12 +38,12 @@ func (log *reqLogger) Name() string {
 	return log.name
 }
 
-func (log *reqLogger) SaveReqMeta(meta ReqMeta) {
-	// Calc request hash
-	// Add line to the index
-	// Create 'hash' folder
-	// Save req_headers.txt
-	// Save req_body.*
-	// Save resp_headers.txt
-	// Save resp_body.*
+func (log *reqLogger) SaveReqMeta(meta ReqMeta) error {
+	line := fmt.Sprintf("N\t%s\t%d\n", meta.Req.URL.String(), meta.Resp.StatusCode)
+	_, err := log.indexFile.WriteString(line)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -13,7 +13,7 @@ type ReqMeta struct {
 type ReqLogger interface {
 	Start() error
 	Name() string
-	SaveReqMeta(meta ReqMeta)
+	SaveReqMeta(meta ReqMeta) error
 }
 
 func NewLogger() ReqLogger {
