@@ -7,6 +7,7 @@ import (
 
 	"bufio"
 	"bytes"
+	"fmt"
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
@@ -51,10 +52,11 @@ var _ = Describe("Logger", func() {
 		})
 	})
 
-	Describe("Start logger", func() {
+	Describe("Log request/response pair", func() {
 		var (
-			path string
-			err  error
+			path  string
+			err   error
+			reqId string
 		)
 		BeforeEach(func() {
 			_ = subject.Start()
@@ -74,7 +76,7 @@ var _ = Describe("Logger", func() {
 				ContentLength: int64(len(respBody)),
 			}
 
-			err = subject.SaveReqMeta(ReqMeta{Req: req, Resp: resp})
+			reqId, err = subject.SaveReqMeta(ReqMeta{Req: req, Resp: resp})
 		})
 
 		It("should return nil error", func() {
@@ -87,9 +89,13 @@ var _ = Describe("Logger", func() {
 			scanner.Scan()
 			line := scanner.Text()
 
-			expected := "N\thttps://secure.api.com?query=123\t200"
+			expected := fmt.Sprintf("N\thttps://secure.api.com?query=123\t200\t%s", reqId)
 			Expect(line).To(Equal(expected))
 		})
 
+		It("should create request dump folder", func() {
+			dirExists, _ := afr.DirExists(path + "/" + reqId)
+			Expect(dirExists).To(BeTrue())
+		})
 	})
 })

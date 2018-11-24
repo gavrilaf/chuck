@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+type LogRecordID string
+
 type ReqMeta struct {
 	Req  *http.Request
 	Resp *http.Response
@@ -13,7 +15,7 @@ type ReqMeta struct {
 type ReqLogger interface {
 	Start() error
 	Name() string
-	SaveReqMeta(meta ReqMeta) error
+	SaveReqMeta(meta ReqMeta) (string, error)
 }
 
 func NewLogger() ReqLogger {

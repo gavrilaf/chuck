@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/afero"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -14,6 +15,8 @@ type reqLogger struct {
 	root *afero.Afero
 
 	indexFile afero.File
+
+	counter int
 }
 
 func (log *reqLogger) Start() error {
@@ -31,6 +34,8 @@ func (log *reqLogger) Start() error {
 	}
 
 	log.indexFile = file
+	log.counter = 1
+
 	return nil
 }
 
@@ -38,12 +43,18 @@ func (log *reqLogger) Name() string {
 	return log.name
 }
 
-func (log *reqLogger) SaveReqMeta(meta ReqMeta) error {
-	line := fmt.Sprintf("N\t%s\t%d\n", meta.Req.URL.String(), meta.Resp.StatusCode)
+func (log *reqLogger) SaveReqMeta(meta ReqMeta) (string, error) {
+	recordID := "rq_" + strconv.Itoa(log.counter)
+	line := fmt.Sprintf("N\t%s\t%d\t%s\n", meta.Req.URL.String(), meta.Resp.StatusCode, recordID)
 	_, err := log.indexFile.WriteString(line)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	err = log.root.Mkdir(recordID, os.ModeDir)
+	if err != nil {
+		return "", err
+	}
+
+	return recordID, nil
 }
