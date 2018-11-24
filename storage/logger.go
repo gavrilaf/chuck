@@ -3,9 +3,12 @@ package storage
 import (
 	"fmt"
 	"github.com/spf13/afero"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/gavrilaf/chuck/utils"
 )
 
 type reqLogger struct {
@@ -56,5 +59,31 @@ func (log *reqLogger) SaveReqMeta(meta ReqMeta) (string, error) {
 		return "", err
 	}
 
+	// TODO: error handling
+
+	log.writeHeader(recordID+"/req_header.json", meta.Req.Header)
+
+	log.writeHeader(recordID+"/resp_header.json", meta.Resp.Header)
+
 	return recordID, nil
+}
+
+func (log *reqLogger) writeHeader(fname string, header http.Header) error {
+	if len(header) > 0 {
+		fp, err := log.root.Create(fname)
+		if err != nil {
+			return nil
+		}
+
+		defer fp.Close()
+
+		buff, err := utils.EncodeHeaders(header)
+		if err != nil {
+			return err
+		}
+
+		_, err = fp.Write(buff)
+		return err
+	}
+	return nil
 }
