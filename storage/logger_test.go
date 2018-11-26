@@ -61,43 +61,50 @@ func createResponse() *http.Response {
 var _ = Describe("Logger", func() {
 	var (
 		subject ReqLogger
-		afr     *afero.Afero
+		root    *afero.Afero
 	)
 
 	BeforeEach(func() {
-		afr = &afero.Afero{Fs: afero.NewMemMapFs()}
-		subject = NewLoggerWithFs(afr)
+		fs := afero.NewMemMapFs()
+		root = &afero.Afero{Fs: fs}
 	})
 
-	Describe("Start logger", func() {
+	Describe("Create logger", func() {
 		var (
-			err         error
-			dirExists   bool
-			indexExists bool
+			err error
 		)
 
 		BeforeEach(func() {
-			err = subject.Start()
-
-			path := subject.Name()
-			dirExists, _ = afr.DirExists(path)
-			indexExists, _ = afr.Exists(path + "/" + "index.txt")
+			subject, err = NewLoggerWithFs(root.Fs)
 		})
 
 		It("should return nil error", func() {
 			Expect(err).To(BeNil())
 		})
 
-		It("should create a logger folder", func() {
-			Expect(dirExists).To(BeTrue())
-		})
+		Context("When logger created", func() {
+			var (
+				dirExists   bool
+				indexExists bool
+			)
 
-		It("should create an index file", func() {
-			Expect(indexExists).To(BeTrue())
+			BeforeEach(func() {
+				path := "log/" + subject.Name()
+				dirExists, _ = root.DirExists(path)
+				indexExists, _ = root.Exists(path + "/index.txt")
+			})
+
+			It("should create a logger folder", func() {
+				Expect(dirExists).To(BeTrue())
+			})
+
+			It("should create an index file", func() {
+				Expect(indexExists).To(BeTrue())
+			})
 		})
 	})
 
-	Describe("Log request/response pair", func() {
+	Describe("Log request", func() {
 		var (
 			path  string
 			err   error
@@ -106,14 +113,15 @@ var _ = Describe("Logger", func() {
 			req  *http.Request
 			resp *http.Response
 		)
+
 		BeforeEach(func() {
-			_ = subject.Start()
-			path = subject.Name()
+			subject, _ = NewLoggerWithFs(root.Fs)
+			path = "log/" + subject.Name()
 
 			req = createRequest()
 			resp = createResponse()
 
-			reqId, err = subject.SaveReqMeta(ReqMeta{Req: req, Resp: resp})
+			reqId, err = subject.LogRequest(req, resp)
 		})
 
 		It("should return nil error", func() {
@@ -121,7 +129,7 @@ var _ = Describe("Logger", func() {
 		})
 
 		It("should index.txt contains log record", func() {
-			fi, _ := afr.Open(path + "/" + "index.txt")
+			fi, _ := root.Open(path + "/" + "index.txt")
 			scanner := bufio.NewScanner(fi)
 			scanner.Scan()
 			line := scanner.Text()
@@ -131,27 +139,27 @@ var _ = Describe("Logger", func() {
 		})
 
 		It("should create request dump folder", func() {
-			dirExists, _ := afr.DirExists(path + "/" + reqId)
+			dirExists, _ := root.DirExists(path + "/" + reqId)
 			Expect(dirExists).To(BeTrue())
 		})
 
 		It("should create request headers dump", func() {
-			dumpExists, _ := afr.Exists(path + "/" + reqId + "/req_header.json")
+			dumpExists, _ := root.Exists(path + "/" + reqId + "/req_header.json")
 			Expect(dumpExists).To(BeTrue())
 		})
 
 		XIt("should create request body dump", func() {
-			dumpExists, _ := afr.Exists(path + "/" + reqId + "/req_body.json")
+			dumpExists, _ := root.Exists(path + "/" + reqId + "/req_body.json")
 			Expect(dumpExists).To(BeTrue())
 		})
 
 		It("should create response headers dump", func() {
-			dumpExists, _ := afr.Exists(path + "/" + reqId + "/resp_header.json")
+			dumpExists, _ := root.Exists(path + "/" + reqId + "/resp_header.json")
 			Expect(dumpExists).To(BeTrue())
 		})
 
 		XIt("should create response body dump", func() {
-			dumpExists, _ := afr.Exists(path + "/" + reqId + "/resp_body.json")
+			dumpExists, _ := root.Exists(path + "/" + reqId + "/resp_body.json")
 			Expect(dumpExists).To(BeTrue())
 		})
 	})

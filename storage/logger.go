@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/spf13/afero"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -12,61 +11,87 @@ import (
 )
 
 type reqLogger struct {
-	name string
-
-	base *afero.Afero
-	root *afero.Afero
-
+	name      string
+	root      *afero.Afero
 	indexFile afero.File
-
-	counter int
+	counter   int
 }
 
-func (log *reqLogger) Start() error {
-	log.name = time.Now().Format("2006_01_02_04_05_01")
+func NewLogger() (ReqLogger, error) {
+	fs := afero.NewOsFs()
+	return NewLoggerWithFs(fs)
+}
 
-	err := log.base.Mkdir(log.name, os.ModeDir)
+func NewLoggerWithFs(fs afero.Fs) (ReqLogger, error) {
+	logDirExists, err := afero.DirExists(fs, "log")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	log.root = &afero.Afero{Fs: afero.NewBasePathFs(log.base, log.name)}
-	file, err := log.root.Create("index.txt")
+	if !logDirExists {
+		err := fs.Mkdir("log", 0777)
+		if err != nil {
+			return nil, err
+		}
+	}
+	fmt.Printf("Created /log folder\n")
+
+	tm := time.Now()
+	name := fmt.Sprintf("%d_%d_%d_%d_%d_%d", tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second())
+	path := "log/" + name
+
+	err = fs.Mkdir(path, 0777)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	log.indexFile = file
-	log.counter = 1
+	fmt.Printf("Created %s folder\n", path)
 
-	return nil
+	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
+	file, err := root.Create("index.txt")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("Created %s file\n", file.Name())
+
+	return &reqLogger{
+		name:      name,
+		root:      root,
+		indexFile: file,
+		counter:   1}, nil
 }
 
 func (log *reqLogger) Name() string {
 	return log.name
 }
 
-func (log *reqLogger) SaveReqMeta(meta ReqMeta) (string, error) {
+func (log *reqLogger) LogRequest(req *http.Request, resp *http.Response) (string, error) {
 	recordID := "rq_" + strconv.Itoa(log.counter)
-	line := fmt.Sprintf("N\t%s\t%d\t%s\n", meta.Req.URL.String(), meta.Resp.StatusCode, recordID)
+	line := fmt.Sprintf("N\t%s\t%d\t%s\n", req.URL.String(), resp.StatusCode, recordID)
 	_, err := log.indexFile.WriteString(line)
 	if err != nil {
 		return "", err
 	}
 
-	err = log.root.Mkdir(recordID, os.ModeDir)
+	err = log.root.Mkdir(recordID, 0777)
 	if err != nil {
 		return "", err
 	}
 
 	// TODO: error handling
 
-	log.writeHeader(recordID+"/req_header.json", meta.Req.Header)
+	log.writeHeader(recordID+"/req_header.json", req.Header)
 
-	log.writeHeader(recordID+"/resp_header.json", meta.Resp.Header)
+	log.writeHeader(recordID+"/resp_header.json", resp.Header)
+
+	log.counter += 1
 
 	return recordID, nil
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+// private
 
 func (log *reqLogger) writeHeader(fname string, header http.Header) error {
 	if len(header) > 0 {

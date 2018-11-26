@@ -2,15 +2,16 @@ package main
 
 import (
 	//"flag"
-	//"fmt"
+	"fmt"
 
 	"gopkg.in/elazarl/goproxy.v1"
 	//"io"
 	"log"
 	//"net"
+	"crypto/tls"
 	"net/http"
 
-	"crypto/tls"
+	"github.com/gavrilaf/chuck/storage"
 )
 
 var handler *proxyHandler
@@ -28,7 +29,13 @@ func handleResponse(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 func main() {
 	addr := ":8080"
 
-	handler = NewHandler()
+	logger, err := storage.NewLogger()
+	if err != nil {
+		fmt.Printf("Could not create requests logger: %v\n", err)
+		panic(err)
+	}
+
+	handler = NewHandler(logger)
 
 	proxy := goproxy.NewProxyHttpServer()
 
