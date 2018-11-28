@@ -27,7 +27,7 @@ func handleResponse(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 }
 
 func main() {
-	addr := ":8080"
+	addr := ":8123"
 
 	logger, err := storage.NewLogger()
 	if err != nil {
@@ -44,15 +44,18 @@ func main() {
 		log.Fatalf("Unable to load certificate - %v", err)
 	}
 
+	log.Printf("Cerfificates loaded ok\n")
+
 	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		return &goproxy.ConnectAction{
 			Action:    goproxy.ConnectMitm,
 			TLSConfig: goproxy.TLSConfigFromCA(&cert),
-		}, host + ":443"
+		}, host
 	})
 
 	proxy.OnRequest().DoFunc(handleRequest)
 	proxy.OnResponse().DoFunc(handleResponse)
 
+	log.Printf("Starting proxy\n")
 	log.Fatal(http.ListenAndServe(addr, proxy))
 }

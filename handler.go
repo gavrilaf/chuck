@@ -46,6 +46,7 @@ func (ph *proxyHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 	}
 
 	elapsed := time.Since(pending.started)
+	// TODO: Somebody can be nil here, have to fix
 	fmt.Printf("--> [%d] : [%v] %s %s, %v \n", ctx.Session, elapsed, ctx.Req.Method, ctx.Req.URL.String(), resp.Status)
 
 	_, err := ph.logger.LogRequest(ctx.Req, resp)
