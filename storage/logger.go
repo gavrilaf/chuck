@@ -3,9 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/spf13/afero"
-	//"io"
 	"net/http"
-	"net/http/httputil"
 	"strconv"
 	"time"
 
@@ -86,9 +84,7 @@ func (log *reqLogger) LogRequest(req *http.Request, resp *http.Response) (string
 
 	log.writeHeader(recordID+"/resp_header.json", resp.Header)
 	fmt.Printf("Response content length: %d, body: %v\n", resp.ContentLength, resp.Body)
-	if resp.Body != nil {
-		log.writeResponseBody(recordID+"/resp_body.json", resp)
-	}
+	log.writeResponseBody(recordID+"/resp_body.json", resp)
 
 	log.counter += 1
 
@@ -96,7 +92,7 @@ func (log *reqLogger) LogRequest(req *http.Request, resp *http.Response) (string
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// private
+// Private
 
 func (log *reqLogger) writeHeader(fname string, header http.Header) error {
 	if len(header) > 0 {
@@ -118,18 +114,17 @@ func (log *reqLogger) writeHeader(fname string, header http.Header) error {
 }
 
 func (log *reqLogger) writeResponseBody(fname string, resp *http.Response) error {
+	b, err := utils.DumpRespBody(resp)
+	if err != nil {
+		return nil
+	}
+
 	fp, err := log.root.Create(fname)
 	if err != nil {
 		return err
 	}
 	defer fp.Close()
 
-	respBuffer, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		return err
-	}
-
-	bytesWritten, err := fp.Write(respBuffer)
-	fmt.Printf("Bytes written %d, error %v\n", bytesWritten, err)
+	_, err = fp.Write(b)
 	return err
 }
