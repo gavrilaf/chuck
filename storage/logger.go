@@ -2,19 +2,29 @@ package storage
 
 import (
 	"fmt"
-	"github.com/spf13/afero"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gavrilaf/chuck/utils"
+	"github.com/spf13/afero"
 )
+
+type pendingRequest struct {
+	id      int64
+	method  string
+	url     string
+	started time.Time
+}
 
 type reqLogger struct {
 	name      string
 	root      *afero.Afero
 	indexFile afero.File
-	counter   int
+	counter   int64
+	pending   map[int64]pendingRequest
+	mux       *sync.Mutex
 }
 
 func NewLogger() (ReqLogger, error) {
@@ -54,41 +64,73 @@ func NewLoggerWithFs(fs afero.Fs) (ReqLogger, error) {
 		name:      name,
 		root:      root,
 		indexFile: file,
-		counter:   1}, nil
+		counter:   1,
+		pending:   make(map[int64]pendingRequest, 10),
+		mux:       &sync.Mutex{}}, nil
 }
 
 func (log *reqLogger) Name() string {
 	return log.name
 }
 
-func (log *reqLogger) LogRequest(req *http.Request, resp *http.Response) (string, error) {
-	recordID := "rq_" + strconv.Itoa(log.counter)
-	line := fmt.Sprintf("N\t%s\t%d\t%s\n", req.URL.String(), resp.StatusCode, recordID)
-	_, err := log.indexFile.WriteString(line)
+func (log *reqLogger) PendingCount() int {
+	log.mux.Lock()
+	defer log.mux.Unlock()
+
+	return len(log.pending)
+}
+
+func (log *reqLogger) LogRequest(req *http.Request, session int64) (int64, error) {
+	log.mux.Lock()
+	defer log.mux.Unlock()
+
+	id := log.counter
+	folder := "r_" + strconv.FormatInt(id, 10)
+
+	err := log.root.Mkdir(folder, 0777)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
-	err = log.root.Mkdir(recordID, 0777)
-	if err != nil {
-		return "", err
+	log.pending[session] = pendingRequest{
+		id:      id,
+		method:  req.Method,
+		url:     req.URL.String(),
+		started: time.Now(),
 	}
-
-	// TODO: error handling
-
-	log.writeHeader(recordID+"/req_header.json", req.Header)
-	//fmt.Printf("Request content length: %d, body: %v\n", req.ContentLength, req.Body)
-	//if req.Body != nil && req.ContentLength > 0 {
-	//	log.writeBody(recordID+"/req_body.json", req.Body)
-	//}
-
-	log.writeHeader(recordID+"/resp_header.json", resp.Header)
-	fmt.Printf("Response content length: %d, body: %v\n", resp.ContentLength, resp.Body)
-	log.writeResponseBody(recordID+"/resp_body.json", resp)
 
 	log.counter += 1
 
-	return recordID, nil
+	log.writeHeader(folder+"/req_header.json", req.Header)
+
+	return id, nil
+}
+
+func (log *reqLogger) LogResponse(resp *http.Response, session int64) (int64, error) {
+	log.mux.Lock()
+	defer log.mux.Unlock()
+
+	req, ok := log.pending[session]
+	if !ok {
+		panic(fmt.Errorf("Could not find request for session: %d\n", session))
+	}
+
+	delete(log.pending, session)
+
+	elapsed := time.Since(req.started)
+	fmt.Printf("--> [%d] : [%v] %s %s, %v \n", req.id, elapsed, req.method, req.url, resp.Status)
+
+	line := fmt.Sprintf("N\tr_%d\t%s\t%s\t%d\n", req.id, req.method, req.url, resp.StatusCode)
+	_, err := log.indexFile.WriteString(line)
+	if err != nil {
+		return 0, err
+	}
+
+	folder := "r_" + strconv.FormatInt(req.id, 10)
+	log.writeHeader(folder+"/resp_header.json", resp.Header)
+	log.writeResponseBody(folder+"/resp_body.json", resp)
+
+	return req.id, nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

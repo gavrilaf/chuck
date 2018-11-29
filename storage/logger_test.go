@@ -104,63 +104,96 @@ var _ = Describe("Logger", func() {
 		})
 	})
 
-	Describe("Log request", func() {
+	Describe("Logging", func() {
 		var (
-			path  string
-			err   error
-			reqId string
-
-			req  *http.Request
-			resp *http.Response
+			basePath string
+			dumpPath string
+			err      error
+			reqId    int64
+			respId   int64
+			session  int64
+			req      *http.Request
+			resp     *http.Response
 		)
 
 		BeforeEach(func() {
 			subject, _ = NewLoggerWithFs(root.Fs)
-			path = "log/" + subject.Name()
-
+			basePath = "log/" + subject.Name()
+			session = 10
 			req = createRequest()
 			resp = createResponse()
-
-			reqId, err = subject.LogRequest(req, resp)
 		})
 
-		It("should return nil error", func() {
-			Expect(err).To(BeNil())
+		It("should PendingCount equal to 0", func() {
+			Expect(subject.PendingCount()).To(Equal(0))
 		})
 
-		It("should index.txt contains log record", func() {
-			fi, _ := root.Open(path + "/" + "index.txt")
-			scanner := bufio.NewScanner(fi)
-			scanner.Scan()
-			line := scanner.Text()
+		Describe("Log request", func() {
+			BeforeEach(func() {
+				reqId, err = subject.LogRequest(req, session)
+				dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqId)
+			})
 
-			expected := fmt.Sprintf("N\thttps://secure.api.com?query=123\t200\t%s", reqId)
-			Expect(line).To(Equal(expected))
-		})
+			It("should return nil error", func() {
+				Expect(err).To(BeNil())
+			})
 
-		It("should create request dump folder", func() {
-			dirExists, _ := root.DirExists(path + "/" + reqId)
-			Expect(dirExists).To(BeTrue())
-		})
+			It("should PendingCount equal to 1", func() {
+				Expect(subject.PendingCount()).To(Equal(1))
+			})
 
-		It("should create request headers dump", func() {
-			dumpExists, _ := root.Exists(path + "/" + reqId + "/req_header.json")
-			Expect(dumpExists).To(BeTrue())
-		})
+			It("should create request dump folder", func() {
+				dirExists, _ := root.DirExists(dumpPath)
+				Expect(dirExists).To(BeTrue())
+			})
 
-		XIt("should create request body dump", func() {
-			dumpExists, _ := root.Exists(path + "/" + reqId + "/req_body.json")
-			Expect(dumpExists).To(BeTrue())
-		})
+			It("should create request headers dump", func() {
+				dumpExists, _ := root.Exists(dumpPath + "req_header.json")
+				Expect(dumpExists).To(BeTrue())
+			})
 
-		It("should create response headers dump", func() {
-			dumpExists, _ := root.Exists(path + "/" + reqId + "/resp_header.json")
-			Expect(dumpExists).To(BeTrue())
-		})
+			XIt("should create request body dump", func() {
+				dumpExists, _ := root.Exists(dumpPath + "req_body.json")
+				Expect(dumpExists).To(BeTrue())
+			})
 
-		XIt("should create response body dump", func() {
-			dumpExists, _ := root.Exists(path + "/" + reqId + "/resp_body.json")
-			Expect(dumpExists).To(BeTrue())
+			Describe("Log response", func() {
+				BeforeEach(func() {
+					respId, err = subject.LogResponse(resp, session)
+				})
+
+				It("should return nil error", func() {
+					Expect(err).To(BeNil())
+				})
+
+				It("should PendingCount equal to 0", func() {
+					Expect(subject.PendingCount()).To(Equal(0))
+				})
+
+				It("should request id equal to response id", func() {
+					Expect(reqId).To(Equal(respId))
+				})
+
+				It("should index.txt contains log record", func() {
+					fi, _ := root.Open(basePath + "/" + "index.txt")
+					scanner := bufio.NewScanner(fi)
+					scanner.Scan()
+					line := scanner.Text()
+
+					expected := fmt.Sprintf("N\tr_%d\tPOST\thttps://secure.api.com?query=123\t200", reqId)
+					Expect(expected).To(Equal(line))
+				})
+
+				It("should create response headers dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "resp_header.json")
+					Expect(dumpExists).To(BeTrue())
+				})
+
+				XIt("should create response body dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "resp_body.json")
+					Expect(dumpExists).To(BeTrue())
+				})
+			})
 		})
 	})
 })

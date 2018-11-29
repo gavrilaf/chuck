@@ -6,5 +6,7 @@ import (
 
 type ReqLogger interface {
 	Name() string
-	LogRequest(req *http.Request, resp *http.Response) (string, error)
+	LogRequest(req *http.Request, session int64) (int64, error)
+	LogResponse(resp *http.Response, session int64) (int64, error)
+	PendingCount() int
 }
