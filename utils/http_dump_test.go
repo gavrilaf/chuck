@@ -18,7 +18,6 @@ var _ = Describe("HttpDump", func() {
 	)
 
 	Describe("Dump http response", func() {
-
 		Context("Empty response", func() {
 			BeforeEach(func() {
 				resp := &http.Response{
@@ -27,7 +26,7 @@ var _ = Describe("HttpDump", func() {
 					Proto:         "HTTP/1.1",
 					ProtoMajor:    1,
 					ProtoMinor:    1,
-					Body:          ioutil.NopCloser(bytes.NewBufferString("")),
+					Body:          nil,
 					ContentLength: int64(0),
 				}
 
@@ -70,5 +69,39 @@ var _ = Describe("HttpDump", func() {
 			})
 		})
 
+		Describe("Dump http request", func() {
+			Context("Empty resporequestnse", func() {
+				BeforeEach(func() {
+					req, _ := http.NewRequest("GET", "https://secure.api.com?query=123", nil)
+					buf, err = DumpReqBody(req)
+				})
+
+				It("should return nil errors", func() {
+					Expect(err).To(BeNil())
+				})
+
+				It("should return empty buffer", func() {
+					Expect(buf).To(Equal([]byte("")))
+				})
+			})
+
+			Context("Filled response", func() {
+				var str string
+
+				BeforeEach(func() {
+					str = `{"allowed": 1}`
+					req, _ := http.NewRequest("GET", "https://secure.api.com?query=123", ioutil.NopCloser(bytes.NewBufferString(str)))
+					buf, err = DumpReqBody(req)
+				})
+
+				It("should return nil errors", func() {
+					Expect(err).To(BeNil())
+				})
+
+				It("should return filled buffer", func() {
+					Expect(buf).To(Equal([]byte(str)))
+				})
+			})
+		})
 	})
 })

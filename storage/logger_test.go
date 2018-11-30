@@ -152,7 +152,7 @@ var _ = Describe("Logger", func() {
 				Expect(dumpExists).To(BeTrue())
 			})
 
-			XIt("should create request body dump", func() {
+			It("should create request body dump", func() {
 				dumpExists, _ := root.Exists(dumpPath + "req_body.json")
 				Expect(dumpExists).To(BeTrue())
 			})
@@ -189,7 +189,7 @@ var _ = Describe("Logger", func() {
 					Expect(dumpExists).To(BeTrue())
 				})
 
-				XIt("should create response body dump", func() {
+				It("should create response body dump", func() {
 					dumpExists, _ := root.Exists(dumpPath + "resp_body.json")
 					Expect(dumpExists).To(BeTrue())
 				})

@@ -8,6 +8,32 @@ import (
 	"strings"
 )
 
+func DumpReqBody(req *http.Request) ([]byte, error) {
+	var err error
+	var save io.ReadCloser
+
+	if req.Body == nil {
+		req.Body = emptyBody
+	} else {
+		save, req.Body, err = drainBody(req.Body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var b bytes.Buffer
+
+	var dest io.Writer = &b
+	_, err = io.Copy(dest, req.Body)
+
+	req.Body = save
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Bytes(), nil
+}
+
 func DumpRespBody(resp *http.Response) ([]byte, error) {
 	var err error
 	save := resp.Body

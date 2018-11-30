@@ -102,6 +102,7 @@ func (log *reqLogger) LogRequest(req *http.Request, session int64) (int64, error
 	log.counter += 1
 
 	log.writeHeader(folder+"/req_header.json", req.Header)
+	log.writeRequesteBody(folder+"/req_body.json", req)
 
 	return id, nil
 }
@@ -157,6 +158,22 @@ func (log *reqLogger) writeHeader(fname string, header http.Header) error {
 
 func (log *reqLogger) writeResponseBody(fname string, resp *http.Response) error {
 	b, err := utils.DumpRespBody(resp)
+	if err != nil {
+		return nil
+	}
+
+	fp, err := log.root.Create(fname)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+
+	_, err = fp.Write(b)
+	return err
+}
+
+func (log *reqLogger) writeRequesteBody(fname string, req *http.Request) error {
+	b, err := utils.DumpReqBody(req)
 	if err != nil {
 		return nil
 	}
