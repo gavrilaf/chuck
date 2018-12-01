@@ -10,3 +10,7 @@ type ReqLogger interface {
 	LogResponse(resp *http.Response, session int64) (int64, error)
 	PendingCount() int
 }
+
+type ReqSeeker interface {
+	Look(method string, url string) *http.Response
+}

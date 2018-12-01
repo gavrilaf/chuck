@@ -13,58 +13,52 @@ import (
 	"net/http"
 )
 
-func createRequest() *http.Request {
-	str := "{}"
-	req, _ := http.NewRequest("POST", "https://secure.api.com?query=123", ioutil.NopCloser(bytes.NewBufferString(str)))
-	req.Header.Set("Content-Type", "application/json")
-	return req
-}
-
-func createResponse() *http.Response {
-	str := `{
-		"colors": [
-		  {
-			"color": "black",
-			"category": "hue",
-			"type": "primary",
-			"code": {
-			  "rgba": [255,255,255,1],
-			  "hex": "#000"
-			}
-		  },
-		  {
-			"color": "white",
-			"category": "value",
-			"code": {
-			  "rgba": [0,0,0,1],
-			  "hex": "#FFF"
-			}
-		  },]}`
-
-	resp := &http.Response{
-		Status:        "200 OK",
-		StatusCode:    200,
-		Proto:         "HTTP/1.1",
-		ProtoMajor:    1,
-		ProtoMinor:    1,
-		Header:        make(http.Header),
-		Body:          ioutil.NopCloser(bytes.NewBufferString(str)),
-		ContentLength: int64(len(str)),
-	}
-
-	resp.Header.Set("Content-Type", "application/json")
-	resp.Header.Set("Content-Length", "6573")
-
-	return resp
-}
-
 var _ = Describe("Logger", func() {
 	var (
 		subject ReqLogger
 		root    *afero.Afero
+
+		createRequest  func() *http.Request
+		createResponse func() *http.Response
 	)
 
 	BeforeEach(func() {
+		createRequest = func() *http.Request {
+			str := "{}"
+			req, _ := http.NewRequest("POST", "https://secure.api.com?query=123", ioutil.NopCloser(bytes.NewBufferString(str)))
+			req.Header.Set("Content-Type", "application/json")
+			return req
+		}
+
+		createResponse = func() *http.Response {
+			str := `{
+				"colors": [
+				  {
+					"color": "white",
+					"category": "value",
+					"code": {
+					  "rgba": [0,0,0,1],
+					  "hex": "#FFF"
+					}
+				  },]}`
+
+			resp := &http.Response{
+				Status:        "200 OK",
+				StatusCode:    200,
+				Proto:         "HTTP/1.1",
+				ProtoMajor:    1,
+				ProtoMinor:    1,
+				Header:        make(http.Header),
+				Body:          ioutil.NopCloser(bytes.NewBufferString(str)),
+				ContentLength: int64(len(str)),
+			}
+
+			resp.Header.Set("Content-Type", "application/json")
+			resp.Header.Set("Content-Length", "6573")
+
+			return resp
+		}
+
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 	})
