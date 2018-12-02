@@ -29,7 +29,7 @@ func handleResponse(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 func main() {
 	addr := ":8123"
 
-	logger, err := storage.NewLogger()
+	logger, err := storage.NewLogger("")
 	if err != nil {
 		fmt.Printf("Could not create requests logger: %v\n", err)
 		panic(err)

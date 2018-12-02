@@ -27,3 +27,8 @@ func NewLogger(folder string) (ReqLogger, error) {
 type ReqSeeker interface {
 	Look(method string, url string) *http.Response
 }
+
+func NewSeeker(folder string) (ReqSeeker, error) {
+	fs := afero.NewOsFs()
+	return NewSeekerWithFs(folder, fs)
+}

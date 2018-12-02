@@ -62,8 +62,6 @@ func NewLoggerWithFs(folder string, fs afero.Fs) (ReqLogger, error) {
 		return nil, err
 	}
 
-	fmt.Println("*** logger created")
-
 	return &reqLogger{
 		name:      name,
 		root:      root,
