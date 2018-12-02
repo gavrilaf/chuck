@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +21,7 @@ type pendingRequest struct {
 
 type reqLogger struct {
 	name      string
+	focused   bool
 	root      *afero.Afero
 	indexFile afero.File
 	counter   int64
@@ -27,19 +29,19 @@ type reqLogger struct {
 	mux       *sync.Mutex
 }
 
-func NewLogger() (ReqLogger, error) {
-	fs := afero.NewOsFs()
-	return NewLoggerWithFs(fs)
-}
+func NewLoggerWithFs(folder string, fs afero.Fs) (ReqLogger, error) {
+	folder = strings.Trim(folder, " \\/")
+	if len(folder) == 0 {
+		folder = "log"
+	}
 
-func NewLoggerWithFs(fs afero.Fs) (ReqLogger, error) {
-	logDirExists, err := afero.DirExists(fs, "log")
+	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
 		return nil, err
 	}
 
 	if !logDirExists {
-		err := fs.Mkdir("log", 0777)
+		err := fs.Mkdir(folder, 0777)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +49,7 @@ func NewLoggerWithFs(fs afero.Fs) (ReqLogger, error) {
 
 	tm := time.Now()
 	name := fmt.Sprintf("%d_%d_%d_%d_%d_%d", tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second())
-	path := "log/" + name
+	path := folder + "/" + name
 
 	err = fs.Mkdir(path, 0777)
 	if err != nil {
@@ -60,6 +62,8 @@ func NewLoggerWithFs(fs afero.Fs) (ReqLogger, error) {
 		return nil, err
 	}
 
+	fmt.Println("*** logger created")
+
 	return &reqLogger{
 		name:      name,
 		root:      root,
@@ -71,6 +75,10 @@ func NewLoggerWithFs(fs afero.Fs) (ReqLogger, error) {
 
 func (log *reqLogger) Name() string {
 	return log.name
+}
+
+func (log *reqLogger) SetFocusedMode(focused bool) {
+	log.focused = focused
 }
 
 func (log *reqLogger) PendingCount() int {
@@ -121,7 +129,12 @@ func (log *reqLogger) LogResponse(resp *http.Response, session int64) (int64, er
 	elapsed := time.Since(req.started)
 	fmt.Printf("--> [%d] : [%v] %s %s, %v \n", req.id, elapsed, req.method, req.url, resp.Status)
 
-	line := fmt.Sprintf("N\tr_%d\t%s\t%s\t%d\n", req.id, req.method, req.url, resp.StatusCode)
+	mode := "N"
+	if log.focused {
+		mode = "F"
+	}
+
+	line := fmt.Sprintf("%s\tr_%d\t%s\t%s\t%d\n", mode, req.id, req.method, req.url, resp.StatusCode)
 	_, err := log.indexFile.WriteString(line)
 	if err != nil {
 		return 0, err

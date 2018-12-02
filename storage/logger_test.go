@@ -16,6 +16,7 @@ import (
 var _ = Describe("Logger", func() {
 	var (
 		subject ReqLogger
+		folder  string
 		root    *afero.Afero
 
 		createRequest  func() *http.Request
@@ -59,6 +60,8 @@ var _ = Describe("Logger", func() {
 			return resp
 		}
 
+		folder = "log-folder"
+
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 	})
@@ -69,11 +72,15 @@ var _ = Describe("Logger", func() {
 		)
 
 		BeforeEach(func() {
-			subject, err = NewLoggerWithFs(root.Fs)
+			subject, err = NewLoggerWithFs(folder, root.Fs)
 		})
 
 		It("should return nil error", func() {
 			Expect(err).To(BeNil())
+		})
+
+		It("should return Logger object", func() {
+			Expect(subject).ToNot(BeNil())
 		})
 
 		Context("When logger created", func() {
@@ -83,7 +90,7 @@ var _ = Describe("Logger", func() {
 			)
 
 			BeforeEach(func() {
-				path := "log/" + subject.Name()
+				path := folder + "/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
 				indexExists, _ = root.Exists(path + "/index.txt")
 			})
@@ -111,7 +118,7 @@ var _ = Describe("Logger", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewLoggerWithFs(root.Fs)
+			subject, _ = NewLoggerWithFs("", root.Fs) // use default path 'log'
 			basePath = "log/" + subject.Name()
 			session = 10
 			req = createRequest()
@@ -186,6 +193,25 @@ var _ = Describe("Logger", func() {
 				It("should create response body dump", func() {
 					dumpExists, _ := root.Exists(dumpPath + "resp_body.json")
 					Expect(dumpExists).To(BeTrue())
+				})
+			})
+
+			Describe("log focused", func() {
+				BeforeEach(func() {
+					subject.SetFocusedMode(true)
+
+					reqId, _ = subject.LogRequest(req, session)
+					subject.LogResponse(resp, session)
+				})
+
+				It("should log request as focused", func() {
+					fi, _ := root.Open(basePath + "/" + "index.txt")
+					scanner := bufio.NewScanner(fi)
+					scanner.Scan()
+					line := scanner.Text()
+
+					expected := fmt.Sprintf("F\tr_%d\tPOST\thttps://secure.api.com?query=123\t200", reqId)
+					Expect(expected).To(Equal(line))
 				})
 			})
 		})
