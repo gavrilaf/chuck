@@ -13,9 +13,9 @@ import (
 	"net/http"
 )
 
-var _ = Describe("Logger", func() {
+var _ = Describe("Recorder", func() {
 	var (
-		subject ReqLogger
+		subject Recorder
 		folder  string
 		root    *afero.Afero
 
@@ -66,13 +66,13 @@ var _ = Describe("Logger", func() {
 		root = &afero.Afero{Fs: fs}
 	})
 
-	Describe("Create logger", func() {
+	Describe("Create Recorder", func() {
 		var (
 			err error
 		)
 
 		BeforeEach(func() {
-			subject, err = NewLoggerWithFs(folder, root.Fs)
+			subject, err = NewRecorderWithFs(folder, root.Fs)
 		})
 
 		It("should return nil error", func() {
@@ -105,7 +105,7 @@ var _ = Describe("Logger", func() {
 		})
 	})
 
-	Describe("Logging", func() {
+	Describe("Recording", func() {
 		var (
 			basePath string
 			dumpPath string
@@ -118,7 +118,7 @@ var _ = Describe("Logger", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewLoggerWithFs("", root.Fs) // use default path 'log'
+			subject, _ = NewRecorderWithFs("", root.Fs) // use default path 'log'
 			basePath = "log/" + subject.Name()
 			session = 10
 			req = createRequest()
@@ -129,9 +129,9 @@ var _ = Describe("Logger", func() {
 			Expect(subject.PendingCount()).To(Equal(0))
 		})
 
-		Describe("Log request", func() {
+		Describe("Record request", func() {
 			BeforeEach(func() {
-				reqId, err = subject.LogRequest(req, session)
+				reqId, err = subject.RecordRequest(req, session)
 				dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqId)
 			})
 
@@ -158,9 +158,9 @@ var _ = Describe("Logger", func() {
 				Expect(dumpExists).To(BeTrue())
 			})
 
-			Describe("Log response", func() {
+			Describe("Record response", func() {
 				BeforeEach(func() {
-					respId, err = subject.LogResponse(resp, session)
+					respId, err = subject.RecordResponse(resp, session)
 				})
 
 				It("should return nil error", func() {
@@ -196,15 +196,15 @@ var _ = Describe("Logger", func() {
 				})
 			})
 
-			Describe("log focused", func() {
+			Describe("Record focused", func() {
 				BeforeEach(func() {
 					subject.SetFocusedMode(true)
 
-					reqId, _ = subject.LogRequest(req, session)
-					subject.LogResponse(resp, session)
+					reqId, _ = subject.RecordRequest(req, session)
+					subject.RecordResponse(resp, session)
 				})
 
-				It("should log request as focused", func() {
+				It("should record request as focused", func() {
 					fi, _ := root.Open(basePath + "/" + "index.txt")
 					scanner := bufio.NewScanner(fi)
 					scanner.Scan()

@@ -7,20 +7,20 @@ import (
 )
 
 type proxyHandler struct {
-	logger storage.ReqLogger
+	recorder storage.Recorder
 }
 
 func (ph *proxyHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
-	ph.logger.LogRequest(req, ctx.Session)
+	ph.recorder.RecordRequest(req, ctx.Session)
 	return nil
 }
 
 func (ph *proxyHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
-	ph.logger.LogResponse(resp, ctx.Session)
+	ph.recorder.RecordResponse(resp, ctx.Session)
 }
 
-func NewHandler(logger storage.ReqLogger) *proxyHandler {
+func NewHandler(recorder storage.Recorder) *proxyHandler {
 	return &proxyHandler{
-		logger: logger,
+		recorder: recorder,
 	}
 }

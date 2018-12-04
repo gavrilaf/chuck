@@ -6,29 +6,27 @@ import (
 )
 
 /*
- * Logger
  */
-type ReqLogger interface {
+type Recorder interface {
 	Name() string
 	SetFocusedMode(focused bool)
-	LogRequest(req *http.Request, session int64) (int64, error)
-	LogResponse(resp *http.Response, session int64) (int64, error)
+	RecordRequest(req *http.Request, session int64) (int64, error)
+	RecordResponse(resp *http.Response, session int64) (int64, error)
 	PendingCount() int
 }
 
-func NewLogger(folder string) (ReqLogger, error) {
+func NewRecorder(folder string) (Recorder, error) {
 	fs := afero.NewOsFs()
-	return NewLoggerWithFs(folder, fs)
+	return NewRecorderWithFs(folder, fs)
 }
 
 /*
- * Seeker
  */
-type ReqSeeker interface {
+type Seeker interface {
 	Look(method string, url string) *http.Response
 }
 
-func NewSeeker(folder string) (ReqSeeker, error) {
+func NewSeeker(folder string) (Seeker, error) {
 	fs := afero.NewOsFs()
 	return NewSeekerWithFs(folder, fs)
 }

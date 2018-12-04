@@ -19,12 +19,12 @@ type respNode struct {
 	statusCode int
 }
 
-type reqSeeker struct {
+type seekerImpl struct {
 	root     *afero.Afero
 	requests map[string]respNode
 }
 
-func NewSeekerWithFs(folder string, fs afero.Fs) (ReqSeeker, error) {
+func NewSeekerWithFs(folder string, fs afero.Fs) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
 	if !logDirExists {
@@ -37,6 +37,7 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (ReqSeeker, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	requests := make(map[string]respNode)
 	scanner := bufio.NewScanner(file)
@@ -64,9 +65,7 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (ReqSeeker, error) {
 		}
 	}
 
-	defer file.Close()
-
-	seeker := &reqSeeker{
+	seeker := &seekerImpl{
 		requests: requests,
 		root:     root,
 	}
@@ -74,7 +73,7 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (ReqSeeker, error) {
 	return seeker, nil
 }
 
-func (seeker *reqSeeker) Look(method string, url string) *http.Response {
+func (seeker *seekerImpl) Look(method string, url string) *http.Response {
 	key := createKey(method, url)
 	req, ok := seeker.requests[key]
 	if !ok {
@@ -112,7 +111,7 @@ func (seeker *reqSeeker) Look(method string, url string) *http.Response {
  * Private
  */
 
-func (seeker *reqSeeker) readHeader(fname string) (http.Header, error) {
+func (seeker *seekerImpl) readHeader(fname string) (http.Header, error) {
 	exists, err := seeker.root.Exists(fname)
 	if err != nil {
 		return nil, err
@@ -137,7 +136,7 @@ func (seeker *reqSeeker) readHeader(fname string) (http.Header, error) {
 	return header, err
 }
 
-func (seeker *reqSeeker) readBody(fname string) (io.ReadCloser, error) {
+func (seeker *seekerImpl) readBody(fname string) (io.ReadCloser, error) {
 	exists, err := seeker.root.Exists(fname)
 	if err != nil {
 		return nil, err

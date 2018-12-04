@@ -13,10 +13,10 @@ import (
 
 var _ = Describe("Seeker", func() {
 	var (
-		logger  ReqLogger
-		root    *afero.Afero
-		path    string
-		subject ReqSeeker
+		recorder Recorder
+		root     *afero.Afero
+		path     string
+		subject  Seeker
 
 		header   http.Header
 		respBody string
@@ -56,17 +56,17 @@ var _ = Describe("Seeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		logger, _ = NewLoggerWithFs("test", fs)
+		recorder, _ = NewRecorderWithFs("test", fs)
 
-		logger.LogRequest(createRequest("POST", "https://secure.api.com/login"), 1)
-		logger.LogResponse(createResponse(), 1)
+		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
+		recorder.RecordResponse(createResponse(), 1)
 
-		logger.SetFocusedMode(true)
+		recorder.SetFocusedMode(true)
 
-		logger.LogRequest(createRequest("GET", "https://secure.api.com/users"), 2)
-		logger.LogResponse(createResponse(), 2)
+		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 2)
+		recorder.RecordResponse(createResponse(), 2)
 
-		path = "test/" + logger.Name()
+		path = "test/" + recorder.Name()
 	})
 
 	Describe("Open Seeker", func() {
