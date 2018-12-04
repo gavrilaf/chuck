@@ -5,9 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	//"bufio"
 	"bytes"
-	//"fmt"
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
@@ -20,11 +18,18 @@ var _ = Describe("Seeker", func() {
 		path    string
 		subject ReqSeeker
 
+		header   http.Header
+		respBody string
+
 		createRequest  func(method string, url string) *http.Request
 		createResponse func() *http.Response
 	)
 
 	BeforeEach(func() {
+		header = make(http.Header)
+		header.Set("Content-Type", "application/json")
+		header.Set("Access-Token", "Bearer-12234")
+
 		createRequest = func(method string, url string) *http.Request {
 			str := "{}"
 			req, _ := http.NewRequest(method, url, ioutil.NopCloser(bytes.NewBufferString(str)))
@@ -33,7 +38,7 @@ var _ = Describe("Seeker", func() {
 		}
 
 		createResponse = func() *http.Response {
-			str := `{"colors": []}`
+			respBody = `{"colors": []}`
 
 			resp := &http.Response{
 				Status:        "200 OK",
@@ -41,14 +46,10 @@ var _ = Describe("Seeker", func() {
 				Proto:         "HTTP/1.1",
 				ProtoMajor:    1,
 				ProtoMinor:    1,
-				Header:        make(http.Header),
-				Body:          ioutil.NopCloser(bytes.NewBufferString(str)),
-				ContentLength: int64(len(str)),
+				Header:        header,
+				Body:          ioutil.NopCloser(bytes.NewBufferString(respBody)),
+				ContentLength: int64(len(respBody)),
 			}
-
-			resp.Header.Set("Content-Type", "application/json")
-			resp.Header.Set("Content-Length", "15")
-
 			return resp
 		}
 
@@ -94,8 +95,23 @@ var _ = Describe("Seeker", func() {
 					resp = subject.Look("GET", "https://secure.api.com/users")
 				})
 
-				XIt("should return request", func() {
+				It("should return request", func() {
 					Expect(resp).ToNot(BeNil())
+				})
+
+				It("should response has correct headers", func() {
+					Expect(resp.Header).To(Equal(header))
+				})
+
+				It("should response has correct body", func() {
+					var buf []byte
+					if resp.Body == nil {
+						buf = make([]byte, 0)
+					} else {
+						buf, _ = ioutil.ReadAll(resp.Body)
+					}
+
+					Expect(string(buf)).To(Equal(respBody))
 				})
 			})
 

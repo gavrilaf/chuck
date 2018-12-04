@@ -156,12 +156,11 @@ func (log *reqLogger) writeHeader(fname string, header http.Header) error {
 		}
 		defer fp.Close()
 
-		buff, err := utils.EncodeHeaders(header)
+		buf, err := utils.EncodeHeaders(header)
 		if err != nil {
 			return err
 		}
-
-		_, err = fp.Write(buff)
+		_, err = fp.Write(buf)
 		return err
 	}
 	return nil

@@ -2,11 +2,16 @@ package storage
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
-	"github.com/spf13/afero"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gavrilaf/chuck/utils"
+	"github.com/spf13/afero"
 )
 
 type respNode struct {
@@ -53,7 +58,7 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (ReqSeeker, error) {
 				statusCode: statusCode,
 			}
 
-			key := fields[2] + ":" + fields[3]
+			key := createKey(fields[2], fields[3])
 			// TODO: log
 			requests[key] = node
 		}
@@ -70,5 +75,92 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (ReqSeeker, error) {
 }
 
 func (seeker *reqSeeker) Look(method string, url string) *http.Response {
-	return nil
+	key := createKey(method, url)
+	req, ok := seeker.requests[key]
+	if !ok {
+		return nil
+	}
+
+	// read headers
+	header, err := seeker.readHeader(req.folder + "/resp_header.json")
+	if err != nil {
+		fmt.Printf("Read header error for %s: %v", key, err)
+		// TODO: Log here
+		return nil
+	}
+
+	body, err := seeker.readBody(req.folder + "/resp_body.json")
+	if err != nil {
+		fmt.Printf("Read body error for %s: %v", key, err)
+		// TODO: Log here
+		return nil
+	}
+
+	response := &http.Response{
+		StatusCode: req.statusCode,
+		Proto:      "HTTP/1.1",
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Header:     header,
+		Body:       body,
+	}
+
+	return response
+}
+
+/*
+ * Private
+ */
+
+func (seeker *reqSeeker) readHeader(fname string) (http.Header, error) {
+	exists, err := seeker.root.Exists(fname)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return make(http.Header), nil
+	}
+
+	fp, err := seeker.root.Open(fname)
+	if err != nil {
+		return nil, err
+	}
+	defer fp.Close()
+
+	buf, err := ioutil.ReadAll(fp)
+	if err != nil {
+		return nil, err
+	}
+
+	header, err := utils.DecodeHeaders(buf)
+	return header, err
+}
+
+func (seeker *reqSeeker) readBody(fname string) (io.ReadCloser, error) {
+	exists, err := seeker.root.Exists(fname)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		return ioutil.NopCloser(strings.NewReader("")), nil
+	}
+
+	fp, err := seeker.root.Open(fname)
+	if err != nil {
+		return nil, err
+	}
+	defer fp.Close()
+
+	buf, err := ioutil.ReadAll(fp)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.NopCloser(bytes.NewReader(buf)), nil
+}
+
+func createKey(method string, url string) string {
+	return method + ":" + url
 }
