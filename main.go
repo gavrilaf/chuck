@@ -1,17 +1,10 @@
 package main
 
 import (
-	//"flag"
-	"fmt"
-
-	"gopkg.in/elazarl/goproxy.v1"
-	//"io"
-	"log"
-	//"net"
 	"crypto/tls"
+	"github.com/gavrilaf/chuck/utils"
+	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
-
-	"github.com/gavrilaf/chuck/storage"
 )
 
 var handler *proxyHandler
@@ -29,22 +22,18 @@ func handleResponse(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 func main() {
 	addr := ":8123"
 
-	logger, err := storage.NewRecorder("")
-	if err != nil {
-		fmt.Printf("Could not create requests recorder: %v\n", err)
-		panic(err)
-	}
+	log := utils.NewLogger()
 
-	handler = NewHandler(logger)
+	handler = NewHandler(log)
 
 	proxy := goproxy.NewProxyHttpServer()
 
 	cert, err := tls.LoadX509KeyPair("ca.pem", "key.pem")
 	if err != nil {
-		log.Fatalf("Unable to load certificate - %v", err)
+		log.Panic("Unable to load certificate: %v", err)
 	}
 
-	log.Printf("Cerfificates loaded ok\n")
+	log.Info("Cerfificates loaded ok")
 
 	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		return &goproxy.ConnectAction{
@@ -56,6 +45,9 @@ func main() {
 	proxy.OnRequest().DoFunc(handleRequest)
 	proxy.OnResponse().DoFunc(handleResponse)
 
-	log.Printf("Starting proxy\n")
-	log.Fatal(http.ListenAndServe(addr, proxy))
+	log.Info("Starting proxy")
+	err = http.ListenAndServe(addr, proxy)
+	if err != nil {
+		log.Panic("Couldn't start proxy: %v", err)
+	}
 }

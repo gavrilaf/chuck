@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
 	"net/http"
 )
@@ -15,9 +16,9 @@ type Recorder interface {
 	PendingCount() int
 }
 
-func NewRecorder(folder string) (Recorder, error) {
+func NewRecorder(folder string, log utils.Logger) (Recorder, error) {
 	fs := afero.NewOsFs()
-	return NewRecorderWithFs(folder, fs)
+	return NewRecorderWithFs(folder, fs, log)
 }
 
 /*
@@ -26,7 +27,7 @@ type Seeker interface {
 	Look(method string, url string) *http.Response
 }
 
-func NewSeeker(folder string) (Seeker, error) {
+func NewSeeker(folder string, log utils.Logger) (Seeker, error) {
 	fs := afero.NewOsFs()
-	return NewSeekerWithFs(folder, fs)
+	return NewSeekerWithFs(folder, fs, log)
 }

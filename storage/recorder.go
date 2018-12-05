@@ -27,9 +27,10 @@ type recorderImpl struct {
 	counter   int64
 	pending   map[int64]pendingRequest
 	mux       *sync.Mutex
+	log       utils.Logger
 }
 
-func NewRecorderWithFs(folder string, fs afero.Fs) (Recorder, error) {
+func NewRecorderWithFs(folder string, fs afero.Fs, log utils.Logger) (Recorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	if len(folder) == 0 {
 		folder = "log"
@@ -68,7 +69,9 @@ func NewRecorderWithFs(folder string, fs afero.Fs) (Recorder, error) {
 		indexFile: file,
 		counter:   1,
 		pending:   make(map[int64]pendingRequest, 10),
-		mux:       &sync.Mutex{}}, nil
+		mux:       &sync.Mutex{},
+		log:       log,
+	}, nil
 }
 
 func (recorder *recorderImpl) Name() string {
@@ -107,8 +110,15 @@ func (recorder *recorderImpl) RecordRequest(req *http.Request, session int64) (i
 
 	recorder.counter += 1
 
-	recorder.writeHeader(folder+"/req_header.json", req.Header)
+	err = recorder.writeHeader(folder+"/req_header.json", req.Header)
+	if err != nil {
+		recorder.log.Error("Couldn't write request header: %v", err)
+	}
+
 	recorder.writeRequesteBody(folder+"/req_body.json", req)
+	if err != nil {
+		recorder.log.Error("Couldn't write request body: %v", err)
+	}
 
 	return id, nil
 }
@@ -119,13 +129,13 @@ func (recorder *recorderImpl) RecordResponse(resp *http.Response, session int64)
 
 	req, ok := recorder.pending[session]
 	if !ok {
-		panic(fmt.Errorf("Could not find request for session: %d\n", session))
+		recorder.log.Panic("Could not find request for session: %d", session)
 	}
 
 	delete(recorder.pending, session)
 
 	elapsed := time.Since(req.started)
-	fmt.Printf("--> [%d] : [%v] %s %s, %v \n", req.id, elapsed, req.method, req.url, resp.Status)
+	recorder.log.Request(req.id, req.method, req.url, resp.StatusCode, elapsed)
 
 	mode := "N"
 	if recorder.focused {
@@ -139,8 +149,15 @@ func (recorder *recorderImpl) RecordResponse(resp *http.Response, session int64)
 	}
 
 	folder := "r_" + strconv.FormatInt(req.id, 10)
-	recorder.writeHeader(folder+"/resp_header.json", resp.Header)
-	recorder.writeResponseBody(folder+"/resp_body.json", resp)
+	err = recorder.writeHeader(folder+"/resp_header.json", resp.Header)
+	if err != nil {
+		recorder.log.Error("Couldn't write response header: %v", err)
+	}
+
+	err = recorder.writeResponseBody(folder+"/resp_body.json", resp)
+	if err != nil {
+		recorder.log.Error("Couldn't write response body: %v", err)
+	}
 
 	return req.id, nil
 }

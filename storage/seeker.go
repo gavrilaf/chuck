@@ -22,9 +22,10 @@ type respNode struct {
 type seekerImpl struct {
 	root     *afero.Afero
 	requests map[string]respNode
+	log      utils.Logger
 }
 
-func NewSeekerWithFs(folder string, fs afero.Fs) (Seeker, error) {
+func NewSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
 	if !logDirExists {
@@ -41,17 +42,18 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (Seeker, error) {
 
 	requests := make(map[string]respNode)
 	scanner := bufio.NewScanner(file)
+	linesCount := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
 		if len(fields) != 5 {
-			// TODO: Error log
+			log.Error("Invalid fields count in %d", linesCount)
 			continue
 		}
 		if fields[0] == "F" { // focused
 			statusCode, err := strconv.Atoi(fields[4])
 			if err != nil {
-				// TODO: Error log
+				log.Error("Invalid status code in %d, %v", linesCount, err)
 				continue
 			}
 			node := respNode{
@@ -60,14 +62,17 @@ func NewSeekerWithFs(folder string, fs afero.Fs) (Seeker, error) {
 			}
 
 			key := createKey(fields[2], fields[3])
-			// TODO: log
 			requests[key] = node
 		}
+		linesCount += 1
 	}
+
+	log.Info("Loaded index in %s, lines %d, focused %d", folder, linesCount, len(requests))
 
 	seeker := &seekerImpl{
 		requests: requests,
 		root:     root,
+		log:      log,
 	}
 
 	return seeker, nil
@@ -80,18 +85,15 @@ func (seeker *seekerImpl) Look(method string, url string) *http.Response {
 		return nil
 	}
 
-	// read headers
 	header, err := seeker.readHeader(req.folder + "/resp_header.json")
 	if err != nil {
-		fmt.Printf("Read header error for %s: %v", key, err)
-		// TODO: Log here
+		seeker.log.Error("Read header error for %s: %v", key, err)
 		return nil
 	}
 
 	body, err := seeker.readBody(req.folder + "/resp_body.json")
 	if err != nil {
-		fmt.Printf("Read body error for %s: %v", key, err)
-		// TODO: Log here
+		seeker.log.Error("Read header body for %s: %v", key, err)
 		return nil
 	}
 

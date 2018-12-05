@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	. "github.com/gavrilaf/chuck/storage"
+	. "github.com/gavrilaf/chuck/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -13,6 +14,7 @@ import (
 
 var _ = Describe("Seeker", func() {
 	var (
+		log      Logger
 		recorder Recorder
 		root     *afero.Afero
 		path     string
@@ -26,6 +28,8 @@ var _ = Describe("Seeker", func() {
 	)
 
 	BeforeEach(func() {
+		log = NewLogger()
+
 		header = make(http.Header)
 		header.Set("Content-Type", "application/json")
 		header.Set("Access-Token", "Bearer-12234")
@@ -56,7 +60,7 @@ var _ = Describe("Seeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder, _ = NewRecorderWithFs("test", fs)
+		recorder, _ = NewRecorderWithFs("test", fs, log)
 
 		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder.RecordResponse(createResponse(), 1)
@@ -74,7 +78,7 @@ var _ = Describe("Seeker", func() {
 			err error
 		)
 		BeforeEach(func() {
-			subject, err = NewSeekerWithFs(path, root)
+			subject, err = NewSeekerWithFs(path, root, log)
 		})
 
 		It("should return nil error", func() {

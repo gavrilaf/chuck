@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	. "github.com/gavrilaf/chuck/storage"
+	. "github.com/gavrilaf/chuck/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -15,6 +16,7 @@ import (
 
 var _ = Describe("Recorder", func() {
 	var (
+		log     Logger
 		subject Recorder
 		folder  string
 		root    *afero.Afero
@@ -60,6 +62,8 @@ var _ = Describe("Recorder", func() {
 			return resp
 		}
 
+		log = NewLogger()
+
 		folder = "log-folder"
 
 		fs := afero.NewMemMapFs()
@@ -72,7 +76,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, err = NewRecorderWithFs(folder, root.Fs)
+			subject, err = NewRecorderWithFs(folder, root.Fs, log)
 		})
 
 		It("should return nil error", func() {
@@ -118,7 +122,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewRecorderWithFs("", root.Fs) // use default path 'log'
+			subject, _ = NewRecorderWithFs("", root.Fs, log) // use default path 'log'
 			basePath = "log/" + subject.Name()
 			session = 10
 			req = createRequest()
