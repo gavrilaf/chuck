@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
-run:
+run-rec:
 	go build
-	./chuck
+	./chuck rec
 
 test:
 	go test ./... -v
