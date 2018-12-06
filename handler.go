@@ -25,6 +25,17 @@ func NewRecordHandler(log utils.Logger) *recordHandler {
 	}
 }
 
+func NewSeekerHandler(log utils.Logger) *seekerHandler {
+	seeker, err := storage.NewSeeker("", log)
+	if err != nil {
+		log.Panic("Could not create requests recorder: %v", err)
+	}
+
+	return &seekerHandler{
+		seeker: seeker,
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////
 
 type recordHandler struct {
@@ -46,4 +57,19 @@ func (p *recordHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 	if err != nil {
 		p.log.Error("Record response error: %v", err)
 	}
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+type seekerHandler struct {
+	seeker storage.Seeker
+}
+
+func (p *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
+	resp := p.seeker.Look(req.Method, req.URL.String())
+	return resp
+}
+
+func (p *seekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
+
 }

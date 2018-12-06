@@ -20,6 +20,16 @@ func main() {
 				log: log,
 			}, nil
 		},
+		"dbg": func() (cli.Command, error) {
+			return &DebugCommand{
+				log: log,
+			}, nil
+		},
+		"intg": func() (cli.Command, error) {
+			return &IntgTestCommand{
+				log: log,
+			}, nil
+		},
 	}
 
 	_, err := c.Run()
