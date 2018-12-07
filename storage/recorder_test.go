@@ -122,7 +122,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewRecorderWithFs("", root.Fs, log) // use default path 'log'
+			subject, _ = NewRecorderWithFs("log", root.Fs, log)
 			basePath = "log/" + subject.Name()
 			session = 10
 			req = createRequest()

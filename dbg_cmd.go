@@ -20,13 +20,14 @@ func (c *DebugCommand) Run(args []string) int {
 	c.log.Info("Running chuck in the debug mode")
 
 	addr := ":8123"
+	folder := "dbg"
 
 	proxy, err := CreateProxy()
 	if err != nil {
 		c.log.Panic("Couldn't create a proxy, %v", err)
 	}
 
-	handler := NewSeekerHandler(c.log)
+	handler := NewSeekerHandler(folder, c.log)
 
 	c.log.Info("Running proxy...")
 	err = RunProxy(proxy, handler, addr)

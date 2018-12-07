@@ -32,10 +32,6 @@ type recorderImpl struct {
 
 func NewRecorderWithFs(folder string, fs afero.Fs, log utils.Logger) (Recorder, error) {
 	folder = strings.Trim(folder, " \\/")
-	if len(folder) == 0 {
-		folder = "log"
-	}
-
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
 		return nil, err

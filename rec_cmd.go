@@ -20,13 +20,14 @@ func (c *RecordCommand) Run(args []string) int {
 	c.log.Info("Running chuck in the record mode")
 
 	addr := ":8123"
+	folder := "log"
 
 	proxy, err := CreateProxy()
 	if err != nil {
 		c.log.Panic("Couldn't create a proxy, %v", err)
 	}
 
-	handler := NewRecordHandler(c.log)
+	handler := NewRecordHandler(folder, c.log)
 
 	c.log.Info("Running proxy...")
 	err = RunProxy(proxy, handler, addr)

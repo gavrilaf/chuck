@@ -7,6 +7,7 @@ import (
 
 type Logger interface {
 	Request(id int64, method string, url string, statusCode int, elapsed time.Duration)
+	FocusedReq(method string, url string, statusCode int)
 
 	Info(format string, args ...interface{})
 	Error(format string, args ...interface{})
@@ -25,7 +26,11 @@ type loggerImpl struct {
 }
 
 func (log *loggerImpl) Request(id int64, method string, url string, statusCode int, elapsed time.Duration) {
-	fmt.Printf("--> [%d] : [%v] %s %s, %d \n", id, elapsed, method, url, statusCode)
+	fmt.Printf("--> [%d] : [%v] %s : %s, %d\n", id, elapsed, method, url, statusCode)
+}
+
+func (log *loggerImpl) FocusedReq(method string, url string, statusCode int) {
+	fmt.Printf("<-- %s : %s, %d\n", method, url, statusCode)
 }
 
 func (log *loggerImpl) Info(format string, args ...interface{}) {

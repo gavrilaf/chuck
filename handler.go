@@ -13,8 +13,8 @@ type ProxyHandler interface {
 	Response(resp *http.Response, ctx *goproxy.ProxyCtx)
 }
 
-func NewRecordHandler(log utils.Logger) *recordHandler {
-	recorder, err := storage.NewRecorder("", log)
+func NewRecordHandler(folder string, log utils.Logger) *recordHandler {
+	recorder, err := storage.NewRecorder(folder, log)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}
@@ -25,14 +25,15 @@ func NewRecordHandler(log utils.Logger) *recordHandler {
 	}
 }
 
-func NewSeekerHandler(log utils.Logger) *seekerHandler {
-	seeker, err := storage.NewSeeker("", log)
+func NewSeekerHandler(folder string, log utils.Logger) *seekerHandler {
+	seeker, err := storage.NewSeeker(folder, log)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}
 
 	return &seekerHandler{
 		seeker: seeker,
+		log:    log,
 	}
 }
 
@@ -63,10 +64,15 @@ func (p *recordHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 
 type seekerHandler struct {
 	seeker storage.Seeker
+	log    utils.Logger
 }
 
 func (p *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
-	resp := p.seeker.Look(req.Method, req.URL.String())
+	method, url := req.Method, req.URL.String()
+	resp := p.seeker.Look(method, url)
+	if resp != nil {
+		p.log.FocusedReq(req.Method, req.URL.String(), resp.StatusCode)
+	}
 	return resp
 }
 
