@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/mitchellh/cli"
 	"time"
 )
 
@@ -14,8 +15,10 @@ type Logger interface {
 	Panic(format string, args ...interface{})
 }
 
-func NewLogger() Logger {
-	return &loggerImpl{}
+func NewLogger(ui cli.Ui) Logger {
+	return &loggerImpl{
+		ui: ui,
+	}
 }
 
 /*
@@ -23,24 +26,37 @@ func NewLogger() Logger {
  */
 
 type loggerImpl struct {
+	ui cli.Ui
 }
 
 func (log *loggerImpl) Request(id int64, method string, url string, statusCode int, elapsed time.Duration) {
-	fmt.Printf("--> [%d] : [%v] %s : %s, %d\n", id, elapsed, method, url, statusCode)
+	s := fmt.Sprintf("--> [%d] : [%v] %s : %s, %d", id, elapsed, method, url, statusCode)
+	log.printForStatusCode(s, statusCode)
 }
 
 func (log *loggerImpl) FocusedReq(method string, url string, statusCode int) {
-	fmt.Printf("<-- %s : %s, %d\n", method, url, statusCode)
+	s := fmt.Sprintf("<-- %s : %s, %d", method, url, statusCode)
+	log.printForStatusCode(s, statusCode)
 }
 
 func (log *loggerImpl) Info(format string, args ...interface{}) {
-	fmt.Printf("[INFO] "+format+"\n", args...)
+	log.ui.Info(fmt.Sprintf("[INFO] "+format, args...))
 }
 
 func (log *loggerImpl) Error(format string, args ...interface{}) {
-	fmt.Printf("[ERR] "+format+"\n", args...)
+	log.ui.Error(fmt.Sprintf("[ERR] "+format, args...))
 }
 
 func (log *loggerImpl) Panic(format string, args ...interface{}) {
 	panic(fmt.Sprintf(format, args...))
+}
+
+func (log *loggerImpl) printForStatusCode(s string, code int) {
+	if code < 400 {
+		log.ui.Info(s)
+	} else if code >= 400 && code < 500 {
+		log.ui.Warn(s)
+	} else {
+		log.ui.Error(s)
+	}
 }

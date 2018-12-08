@@ -10,7 +10,16 @@ const AppName = "chuck"
 const Version = "0.0.1"
 
 func main() {
-	log := utils.NewLogger()
+	ui := &cli.ColoredUi{
+		InfoColor:  cli.UiColorGreen,
+		WarnColor:  cli.UiColorYellow,
+		ErrorColor: cli.UiColorRed,
+		Ui: &cli.BasicUi{
+			Writer:      os.Stdout,
+			ErrorWriter: os.Stderr,
+		},
+	}
+	log := utils.NewLogger(ui)
 
 	c := cli.NewCLI(AppName, Version)
 	c.Args = os.Args[1:]

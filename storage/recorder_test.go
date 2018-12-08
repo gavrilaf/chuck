@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
@@ -62,7 +63,7 @@ var _ = Describe("Recorder", func() {
 			return resp
 		}
 
-		log = NewLogger()
+		log = NewLogger(cli.NewMockUi())
 
 		folder = "log-folder"
 

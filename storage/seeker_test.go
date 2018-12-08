@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"bytes"
+	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
@@ -28,7 +29,7 @@ var _ = Describe("Seeker", func() {
 	)
 
 	BeforeEach(func() {
-		log = NewLogger()
+		log = NewLogger(cli.NewMockUi())
 
 		header = make(http.Header)
 		header.Set("Content-Type", "application/json")
