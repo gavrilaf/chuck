@@ -1,4 +1,4 @@
-package main
+package cmds
 
 import (
 	"github.com/gavrilaf/chuck/utils"
@@ -6,7 +6,7 @@ import (
 )
 
 type IntgTestCommand struct {
-	log utils.Logger
+	Log utils.Logger
 }
 
 func (c *IntgTestCommand) Help() string {
@@ -17,8 +17,8 @@ Usage: chuck intg [addr:port] [folder]
 }
 
 func (c *IntgTestCommand) Run(args []string) int {
-	c.log.Info("Running chuck in the integrations test mode")
-	c.log.Error("Doesn't supported yet")
+	c.Log.Info("Running chuck in the integrations test mode")
+	c.Log.Error("Doesn't supported yet")
 
 	return 0
 }

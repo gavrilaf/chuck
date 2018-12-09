@@ -1,6 +1,7 @@
 package main
 
 import (
+	. "github.com/gavrilaf/chuck/cmds"
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/mitchellh/cli"
 	"os"
@@ -26,17 +27,17 @@ func main() {
 	c.Commands = map[string]cli.CommandFactory{
 		"rec": func() (cli.Command, error) {
 			return &RecordCommand{
-				log: log,
+				Log: log,
 			}, nil
 		},
 		"dbg": func() (cli.Command, error) {
 			return &DebugCommand{
-				log: log,
+				Log: log,
 			}, nil
 		},
 		"intg": func() (cli.Command, error) {
 			return &IntgTestCommand{
-				log: log,
+				Log: log,
 			}, nil
 		},
 	}

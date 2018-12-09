@@ -1,0 +1,38 @@
+package handlers
+
+import (
+	"net/http"
+
+	"github.com/gavrilaf/chuck/storage"
+	"github.com/gavrilaf/chuck/utils"
+	"gopkg.in/elazarl/goproxy.v1"
+)
+
+type ProxyHandler interface {
+	Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response
+	Response(resp *http.Response, ctx *goproxy.ProxyCtx)
+}
+
+func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
+	recorder, err := storage.NewRecorder(folder, log)
+	if err != nil {
+		log.Panic("Could not create requests recorder: %v", err)
+	}
+
+	return &recordHandler{
+		recorder: recorder,
+		log:      log,
+	}
+}
+
+func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
+	seeker, err := storage.NewSeeker(folder, log)
+	if err != nil {
+		log.Panic("Could not create requests recorder: %v", err)
+	}
+
+	return &seekerHandler{
+		seeker: seeker,
+		log:    log,
+	}
+}

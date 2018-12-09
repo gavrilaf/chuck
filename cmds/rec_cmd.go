@@ -1,12 +1,13 @@
-package main
+package cmds
 
 import (
+	. "github.com/gavrilaf/chuck/handlers"
 	"github.com/gavrilaf/chuck/utils"
 	"strings"
 )
 
 type RecordCommand struct {
-	log utils.Logger
+	Log utils.Logger
 }
 
 func (c *RecordCommand) Help() string {
@@ -17,22 +18,22 @@ Usage: chuck rec [addr:port] [folder] [--force]
 }
 
 func (c *RecordCommand) Run(args []string) int {
-	c.log.Info("Running chuck in the record mode")
+	c.Log.Info("Running chuck in the record mode")
 
 	addr := ":8123"
 	folder := "log"
 
 	proxy, err := CreateProxy()
 	if err != nil {
-		c.log.Panic("Couldn't create a proxy, %v", err)
+		c.Log.Panic("Couldn't create a proxy, %v", err)
 	}
 
-	handler := NewRecordHandler(folder, c.log)
+	handler := NewRecordHandler(folder, c.Log)
 
-	c.log.Info("Running proxy...")
+	c.Log.Info("Running proxy...")
 	err = RunProxy(proxy, handler, addr)
 	if err != nil {
-		c.log.Panic("Couldn't run a proxy, %v", err)
+		c.Log.Panic("Couldn't run a proxy, %v", err)
 	}
 
 	return 0
