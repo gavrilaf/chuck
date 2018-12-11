@@ -11,6 +11,7 @@ type Logger interface {
 	FocusedReq(method string, url string, statusCode int)
 
 	Info(format string, args ...interface{})
+	Warn(format string, args ...interface{})
 	Error(format string, args ...interface{})
 	Panic(format string, args ...interface{})
 }
@@ -41,6 +42,10 @@ func (log *loggerImpl) FocusedReq(method string, url string, statusCode int) {
 
 func (log *loggerImpl) Info(format string, args ...interface{}) {
 	log.ui.Info(fmt.Sprintf("[INFO] "+format, args...))
+}
+
+func (log *loggerImpl) Warn(format string, args ...interface{}) {
+	log.ui.Warn(fmt.Sprintf("[WARN] "+format, args...))
 }
 
 func (log *loggerImpl) Error(format string, args ...interface{}) {

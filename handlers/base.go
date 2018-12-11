@@ -22,8 +22,9 @@ func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
 	}
 
 	return &recordHandler{
-		recorder: recorder,
-		log:      log,
+		recorder:       recorder,
+		log:            log,
+		preventCaching: true,
 	}
 }
 
