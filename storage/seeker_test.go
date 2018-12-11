@@ -61,7 +61,7 @@ var _ = Describe("Seeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder, _ = NewRecorderWithFs("test", fs, log)
+		recorder, _ = NewRecorderWithFs("test", false, fs, log)
 
 		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder.RecordResponse(createResponse(), 1)
@@ -71,7 +71,7 @@ var _ = Describe("Seeker", func() {
 		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 2)
 		recorder.RecordResponse(createResponse(), 2)
 
-		path = "test/" + recorder.Name()
+		path = "test"
 	})
 
 	Describe("Open Seeker", func() {

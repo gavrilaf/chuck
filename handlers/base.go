@@ -14,7 +14,7 @@ type ProxyHandler interface {
 }
 
 func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
-	recorder, err := storage.NewRecorder(folder, log)
+	recorder, err := storage.NewRecorder(folder, true, log)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}
@@ -35,4 +35,13 @@ func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
 		seeker: seeker,
 		log:    log,
 	}
+}
+
+func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
+	seeker, err := storage.NewScSeeker(folder, log)
+	if err != nil {
+		log.Panic("Could not create requests recorder: %v", err)
+	}
+
+	return NewScenarioHandlerWithSeeker(seeker, log)
 }

@@ -73,35 +73,50 @@ var _ = Describe("Recorder", func() {
 
 	Describe("Create Recorder", func() {
 		var (
-			err error
+			err         error
+			dirExists   bool
+			indexExists bool
 		)
 
-		BeforeEach(func() {
-			subject, err = NewRecorderWithFs(folder, root.Fs, log)
-		})
-
-		It("should return nil error", func() {
-			Expect(err).To(BeNil())
-		})
-
-		It("should return Logger object", func() {
-			Expect(subject).ToNot(BeNil())
-		})
-
-		Context("When logger created", func() {
-			var (
-				dirExists   bool
-				indexExists bool
-			)
-
+		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
+				subject, err = NewRecorderWithFs(folder, true, root.Fs, log)
+
 				path := folder + "/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
 				indexExists, _ = root.Exists(path + "/index.txt")
 			})
 
+			It("should return nil error", func() {
+				Expect(err).To(BeNil())
+			})
+
+			It("should return Logger object", func() {
+				Expect(subject).ToNot(BeNil())
+			})
+
 			It("should create a logger folder", func() {
 				Expect(dirExists).To(BeTrue())
+			})
+
+			It("should create an index file", func() {
+				Expect(indexExists).To(BeTrue())
+			})
+		})
+
+		Context("when createNewFolder is false", func() {
+			BeforeEach(func() {
+				subject, err = NewRecorderWithFs(folder, false, root.Fs, log)
+
+				indexExists, _ = root.Exists(folder + "/index.txt")
+			})
+
+			It("should return nil error", func() {
+				Expect(err).To(BeNil())
+			})
+
+			It("should return empty Name", func() {
+				Expect(subject.Name()).To(Equal(""))
 			})
 
 			It("should create an index file", func() {
@@ -123,7 +138,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewRecorderWithFs("log", root.Fs, log)
+			subject, _ = NewRecorderWithFs("log", true, root.Fs, log)
 			basePath = "log/" + subject.Name()
 			session = 10
 			req = createRequest()

@@ -30,7 +30,7 @@ type recorderImpl struct {
 	log       utils.Logger
 }
 
-func NewRecorderWithFs(folder string, fs afero.Fs, log utils.Logger) (Recorder, error) {
+func NewRecorderWithFs(folder string, createNewFolder bool, fs afero.Fs, log utils.Logger) (Recorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
@@ -44,13 +44,17 @@ func NewRecorderWithFs(folder string, fs afero.Fs, log utils.Logger) (Recorder, 
 		}
 	}
 
-	tm := time.Now()
-	name := fmt.Sprintf("%d_%d_%d_%d_%d_%d", tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second())
-	path := folder + "/" + name
+	name := ""
+	path := folder
+	if createNewFolder {
+		tm := time.Now()
+		name = fmt.Sprintf("%d_%d_%d_%d_%d_%d", tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second())
+		path = folder + "/" + name
 
-	err = fs.Mkdir(path, 0777)
-	if err != nil {
-		return nil, err
+		err = fs.Mkdir(path, 0777)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}

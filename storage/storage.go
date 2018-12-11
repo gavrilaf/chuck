@@ -7,6 +7,7 @@ import (
 )
 
 /*
+ *
  */
 type Recorder interface {
 	Name() string
@@ -16,12 +17,13 @@ type Recorder interface {
 	PendingCount() int
 }
 
-func NewRecorder(folder string, log utils.Logger) (Recorder, error) {
+func NewRecorder(folder string, createNewFolder bool, log utils.Logger) (Recorder, error) {
 	fs := afero.NewOsFs()
-	return NewRecorderWithFs(folder, fs, log)
+	return NewRecorderWithFs(folder, createNewFolder, fs, log)
 }
 
 /*
+ *
  */
 type Seeker interface {
 	Look(method string, url string) *http.Response
@@ -30,4 +32,17 @@ type Seeker interface {
 func NewSeeker(folder string, log utils.Logger) (Seeker, error) {
 	fs := afero.NewOsFs()
 	return NewSeekerWithFs(folder, fs, log)
+}
+
+/*
+ *
+ */
+type ScSeeker interface {
+	Look(scenario string, method string, url string) *http.Response
+	IsScenarioExists(name string) bool
+}
+
+func NewScSeeker(folder string, log utils.Logger) (ScSeeker, error) {
+	fs := afero.NewOsFs()
+	return NewScSeekerWithFs(folder, fs, log)
 }
