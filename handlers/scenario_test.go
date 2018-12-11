@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"os"
 )
 
@@ -68,10 +69,9 @@ var _ = Describe("Scenario", func() {
 
 	Describe("Open scenario proxy handler", func() {
 		var (
-			subject ProxyHandler
-
-			activationResp *http.Response
-			resp           *http.Response
+			subject  ProxyHandler
+			recorder *httptest.ResponseRecorder
+			resp     *http.Response
 		)
 
 		BeforeEach(func() {
@@ -85,22 +85,24 @@ var _ = Describe("Scenario", func() {
 		Context("when activate unknown scenario", func() {
 			BeforeEach(func() {
 				req := createRequest("PUT", "https://127.0.0.1/scenario/scenario-111/scenario-111-id/no")
-				activationResp = subject.Request(req, nil)
+				recorder = httptest.NewRecorder()
+				subject.NonProxyHandler(recorder, req)
 			})
 
 			It("should activate scenario", func() {
-				Expect(activationResp.StatusCode).To(Equal(404))
+				Expect(recorder.Code).To(Equal(404))
 			})
 		})
 
 		Context("when activate existing scenario", func() {
 			BeforeEach(func() {
 				req := createRequest("PUT", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no")
-				activationResp = subject.Request(req, nil)
+				recorder = httptest.NewRecorder()
+				subject.NonProxyHandler(recorder, req)
 			})
 
 			It("should activate scenario", func() {
-				Expect(activationResp.StatusCode).To(Equal(200))
+				Expect(recorder.Code).To(Equal(200))
 			})
 
 			Context("when request from the scenario", func() {

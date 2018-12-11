@@ -25,3 +25,8 @@ func (p *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.
 func (p *seekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 
 }
+
+func (p *seekerHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
+	w.WriteHeader(404)
+	w.Write([]byte("Not supported in debug mode"))
+}

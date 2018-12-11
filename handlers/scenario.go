@@ -28,11 +28,6 @@ func NewScenarioHandlerWithSeeker(seeker storage.ScSeeker, log utils.Logger) Pro
 }
 
 func (p *scenarioHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
-	activateResp := p.tryToActivateScenario(req)
-	if activateResp != nil {
-		return activateResp
-	}
-
 	method := req.Method
 	url := req.URL.String()
 	id, ok := req.Header[http.CanonicalHeaderKey(AADHIIdentifier)]
@@ -60,34 +55,31 @@ func (p *scenarioHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 
 }
 
+func (p *scenarioHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
+	p.log.Info("NonProxyHandler, %s, %s", req.Method, req.URL.String())
+	p.tryToActivateScenario(w, req)
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 var activateRe = regexp.MustCompile("/scenario/(.*)/(.*)/no")
 
-func (p *scenarioHandler) tryToActivateScenario(req *http.Request) *http.Response {
+func (p *scenarioHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
 	url := req.URL.String()
 	matches := activateRe.FindStringSubmatch(url)
 	if len(matches) == 3 {
 		scenario := matches[1]
 		id := matches[2]
 
-		var statusCode int
 		if p.seeker.IsScenarioExists(scenario) {
 			p.log.Info("Activated scenario %s with id %s", scenario, id)
 			p.scenarios[id] = scenario
-			statusCode = 200
+			w.WriteHeader(200)
+			return
 		} else {
 			p.log.Error("Scenario %s not found", scenario)
-			statusCode = 404
-		}
-
-		return &http.Response{
-			StatusCode: statusCode,
-			Proto:      "HTTP/1.1",
-			ProtoMajor: 1,
-			ProtoMinor: 1,
 		}
 	}
 
-	return nil
+	w.WriteHeader(404)
 }

@@ -11,6 +11,8 @@ import (
 type ProxyHandler interface {
 	Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response
 	Response(resp *http.Response, ctx *goproxy.ProxyCtx)
+
+	NonProxyHandler(w http.ResponseWriter, req *http.Request)
 }
 
 func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
