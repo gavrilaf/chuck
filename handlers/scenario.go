@@ -37,7 +37,7 @@ func (p *scenarioHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *htt
 		if ok {
 			resp := p.seeker.Look(scenario, method, url)
 			if resp == nil {
-				p.log.Error("Saved response isn't found for scenarion %s, %s : %s", scenario, method, url)
+				p.log.Warn("Saved response isn't found for scenarion %s, %s : %s", scenario, method, url)
 			} else {
 				p.log.Info("Stubbed response for scenarion %s, request %s : %s", scenario, method, url)
 				return resp
@@ -56,7 +56,6 @@ func (p *scenarioHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 }
 
 func (p *scenarioHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
-	p.log.Info("NonProxyHandler, %s, %s", req.Method, req.URL.String())
 	p.tryToActivateScenario(w, req)
 }
 
