@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"regexp"
 
 	"github.com/gavrilaf/chuck/storage"
 	"github.com/gavrilaf/chuck/utils"
@@ -30,7 +29,7 @@ func NewScenarioHandlerWithSeeker(seeker storage.ScSeeker, log utils.Logger) Pro
 func (p *scenarioHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	method := req.Method
 	url := req.URL.String()
-	id, ok := req.Header[http.CanonicalHeaderKey(AADHIIdentifier)]
+	id, ok := req.Header[testIdentifierHeader]
 
 	if ok {
 		scenario, ok := p.scenarios[id[0]]
@@ -46,7 +45,7 @@ func (p *scenarioHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *htt
 			p.log.Error("Scenario isn't found for id %s, %s : %s", id[0], method, url)
 		}
 	} else {
-		p.log.Error("AADHI header not found for %s : %s", method, url)
+		p.log.Error("Integration test header not found for %s : %s", method, url)
 	}
 	return nil
 }
@@ -61,11 +60,9 @@ func (p *scenarioHandler) NonProxyHandler(w http.ResponseWriter, req *http.Reque
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-var activateRe = regexp.MustCompile("/scenario/(.*)/(.*)/no")
-
 func (p *scenarioHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
 	url := req.URL.String()
-	matches := activateRe.FindStringSubmatch(url)
+	matches := activateScRegx.FindStringSubmatch(url)
 	if len(matches) == 3 {
 		scenario := matches[1]
 		id := matches[2]

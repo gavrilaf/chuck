@@ -46,3 +46,18 @@ func NewScSeeker(folder string, log utils.Logger) (ScSeeker, error) {
 	fs := afero.NewOsFs()
 	return NewScSeekerWithFs(folder, fs, log)
 }
+
+/*
+ *
+ */
+type ScRecorder interface {
+	Name() string
+	ActivateScenario(name string) error
+	RecordRequest(req *http.Request, session int64) (int64, error)
+	RecordResponse(resp *http.Response, session int64) (int64, error)
+}
+
+func NewScRecorder(folder string, createNewFolder bool, log utils.Logger) (ScRecorder, error) {
+	fs := afero.NewOsFs()
+	return NewScRecorderWithFs(folder, createNewFolder, fs, log)
+}

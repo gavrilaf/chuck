@@ -1,14 +1,7 @@
 package storage
 
 import (
-	//"bufio"
-	//"bytes"
-	"fmt"
-	//"io"
-	//"io/ioutil"
 	"net/http"
-	//"strconv"
-	//"strings"
 
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
@@ -23,14 +16,10 @@ type scSeekerImpl struct {
 func NewScSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (ScSeeker, error) {
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
-	fmt.Println("** NewScSeekerWithFs")
-
 	content, err := root.ReadDir("")
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("Open sc in folder %s, content %v\n", folder, content)
 
 	seekers := make(map[string]Seeker)
 	for _, f := range content {
@@ -43,7 +32,6 @@ func NewScSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (ScSeeker, 
 			} else {
 				seekers[name] = seeker
 			}
-
 		}
 	}
 

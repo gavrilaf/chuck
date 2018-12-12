@@ -40,6 +40,11 @@ func main() {
 				Log: log,
 			}, nil
 		},
+		"intg_rec": func() (cli.Command, error) {
+			return &IntgTestRecCommand{
+				Log: log,
+			}, nil
+		},
 	}
 
 	_, err := c.Run()
