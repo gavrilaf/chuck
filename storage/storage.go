@@ -15,6 +15,7 @@ type Recorder interface {
 	RecordRequest(req *http.Request, session int64) (int64, error)
 	RecordResponse(resp *http.Response, session int64) (int64, error)
 	PendingCount() int
+	Close()
 }
 
 func NewRecorder(folder string, createNewFolder bool, log utils.Logger) (Recorder, error) {

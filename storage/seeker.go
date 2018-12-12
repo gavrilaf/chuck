@@ -15,13 +15,14 @@ import (
 )
 
 type respNode struct {
+	key        string
 	folder     string
 	statusCode int
 }
 
 type seekerImpl struct {
 	root     *afero.Afero
-	requests map[string]respNode
+	requests []respNode
 	log      utils.Logger
 }
 
@@ -40,7 +41,7 @@ func NewSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Seeker, erro
 	}
 	defer file.Close()
 
-	requests := make(map[string]respNode)
+	requests := make([]respNode, 0)
 	scanner := bufio.NewScanner(file)
 	linesCount := 0
 	for scanner.Scan() {
@@ -57,12 +58,11 @@ func NewSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Seeker, erro
 				continue
 			}
 			node := respNode{
+				key:        createKey(fields[2], fields[3]),
 				folder:     fields[1],
 				statusCode: statusCode,
 			}
-
-			key := createKey(fields[2], fields[3])
-			requests[key] = node
+			requests = append(requests, node)
 		}
 		linesCount += 1
 	}
@@ -80,7 +80,16 @@ func NewSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Seeker, erro
 
 func (seeker *seekerImpl) Look(method string, url string) *http.Response {
 	key := createKey(method, url)
-	req, ok := seeker.requests[key]
+	var req respNode
+	ok := false
+	for _, node := range seeker.requests {
+		if strings.HasPrefix(key, node.key) {
+			req = node
+			ok = true
+			break
+		}
+	}
+
 	if !ok {
 		return nil
 	}

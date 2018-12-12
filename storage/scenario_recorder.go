@@ -66,7 +66,12 @@ func (p *scRecorderImpl) ActivateScenario(name string) error {
 	if err != nil {
 		return err
 	}
+
+	if p.recorder != nil {
+		p.recorder.Close()
+	}
 	p.recorder = recorder
+
 	return nil
 }
 

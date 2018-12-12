@@ -82,6 +82,10 @@ func (recorder *recorderImpl) SetFocusedMode(focused bool) {
 	recorder.focused = focused
 }
 
+func (recorder *recorderImpl) Close() {
+	recorder.indexFile.Close()
+}
+
 func (recorder *recorderImpl) PendingCount() int {
 	recorder.mux.Lock()
 	defer recorder.mux.Unlock()
