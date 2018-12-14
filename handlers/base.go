@@ -42,7 +42,7 @@ func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
 }
 
 func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
-	seeker, err := storage.NewScSeeker(folder, log)
+	seeker, err := storage.NewScenarioSeeker(folder, log)
 	if err != nil {
 		log.Panic("Could not create requests scenario seeker: %v", err)
 	}
@@ -51,7 +51,7 @@ func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
 }
 
 func NewScenarioRecorderHandler(folder string, log utils.Logger) ProxyHandler {
-	recorder, err := storage.NewScRecorder(folder, true, log)
+	recorder, err := storage.NewScenarioRecorder(folder, true, log)
 	if err != nil {
 		log.Panic("Could not create requests scenario recorder: %v", err)
 	}

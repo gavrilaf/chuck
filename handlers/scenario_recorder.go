@@ -9,14 +9,14 @@ import (
 )
 
 type scenarioRecordHandler struct {
-	recorder storage.ScRecorder
+	recorder storage.ScenarioRecorder
 	log      utils.Logger
 
 	scenarios      map[string]string
 	preventCaching bool
 }
 
-func NewScenarioHandlerWithRecorder(recorder storage.ScRecorder, log utils.Logger) ProxyHandler {
+func NewScenarioHandlerWithRecorder(recorder storage.ScenarioRecorder, log utils.Logger) ProxyHandler {
 	return &scenarioRecordHandler{
 		recorder:       recorder,
 		log:            log,

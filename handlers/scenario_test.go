@@ -20,7 +20,7 @@ var _ = Describe("Scenario", func() {
 	var (
 		log      Logger
 		root     *afero.Afero
-		scSeeker ScSeeker
+		scSeeker ScenarioSeeker
 
 		createRequest  func(method string, url string) *http.Request
 		createResponse func() *http.Response
@@ -64,7 +64,7 @@ var _ = Describe("Scenario", func() {
 		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 1)
 		recorder2.RecordResponse(createResponse(), 1)
 
-		scSeeker, _ = NewScSeekerWithFs("test", root, log)
+		scSeeker, _ = NewScenarioSeekerWithFs("test", root, log)
 	})
 
 	Describe("Open scenario proxy handler", func() {

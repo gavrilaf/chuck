@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
-	"os"
+	//"os"
 )
 
 var _ = Describe("Scenario", func() {
@@ -24,10 +24,11 @@ var _ = Describe("Scenario", func() {
 	)
 
 	BeforeEach(func() {
-		log = NewLogger(&cli.BasicUi{
+		/*log = NewLogger(&cli.BasicUi{
 			Writer:      os.Stdout,
 			ErrorWriter: os.Stderr,
-		})
+		})*/
+		log = NewLogger(&cli.MockUi{})
 
 		header := make(http.Header)
 		header.Set("Content-Type", "application/json")
@@ -77,11 +78,11 @@ var _ = Describe("Scenario", func() {
 	Describe("Open Scenario", func() {
 		var (
 			err     error
-			subject ScSeeker
+			subject ScenarioSeeker
 		)
 
 		BeforeEach(func() {
-			subject, err = NewScSeekerWithFs("test", root, log)
+			subject, err = NewScenarioSeekerWithFs("test", root, log)
 		})
 
 		It("should return nil error", func() {

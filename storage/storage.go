@@ -1,9 +1,14 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
 	"net/http"
+)
+
+var (
+	ErrScenarioNotFound = fmt.Errorf("Scenario not found")
 )
 
 /*
@@ -38,27 +43,27 @@ func NewSeeker(folder string, log utils.Logger) (Seeker, error) {
 /*
  *
  */
-type ScSeeker interface {
-	Look(scenario string, method string, url string) *http.Response
+type ScenarioSeeker interface {
 	IsScenarioExists(name string) bool
+	Look(scenario string, method string, url string) *http.Response
 }
 
-func NewScSeeker(folder string, log utils.Logger) (ScSeeker, error) {
+func NewScenarioSeeker(folder string, log utils.Logger) (ScenarioSeeker, error) {
 	fs := afero.NewOsFs()
-	return NewScSeekerWithFs(folder, fs, log)
+	return NewScenarioSeekerWithFs(folder, fs, log)
 }
 
 /*
  *
  */
-type ScRecorder interface {
+type ScenarioRecorder interface {
 	Name() string
 	ActivateScenario(name string) error
 	RecordRequest(req *http.Request, session int64) (int64, error)
 	RecordResponse(resp *http.Response, session int64) (int64, error)
 }
 
-func NewScRecorder(folder string, createNewFolder bool, log utils.Logger) (ScRecorder, error) {
+func NewScenarioRecorder(folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
 	fs := afero.NewOsFs()
-	return NewScRecorderWithFs(folder, createNewFolder, fs, log)
+	return NewScenarioRecorderWithFs(folder, createNewFolder, fs, log)
 }

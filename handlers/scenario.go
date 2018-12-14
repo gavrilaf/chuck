@@ -13,12 +13,12 @@ const (
 )
 
 type scenarioHandler struct {
-	seeker    storage.ScSeeker
+	seeker    storage.ScenarioSeeker
 	log       utils.Logger
 	scenarios map[string]string
 }
 
-func NewScenarioHandlerWithSeeker(seeker storage.ScSeeker, log utils.Logger) ProxyHandler {
+func NewScenarioHandlerWithSeeker(seeker storage.ScenarioSeeker, log utils.Logger) ProxyHandler {
 	return &scenarioHandler{
 		seeker:    seeker,
 		log:       log,

@@ -13,7 +13,7 @@ type scSeekerImpl struct {
 	log     utils.Logger
 }
 
-func NewScSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (ScSeeker, error) {
+func NewScenarioSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (ScenarioSeeker, error) {
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
 	content, err := root.ReadDir("")
@@ -44,13 +44,13 @@ func NewScSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (ScSeeker, 
 	}, nil
 }
 
-func (sc *scSeekerImpl) IsScenarioExists(name string) bool {
-	_, ok := sc.seekers[name]
+func (p *scSeekerImpl) IsScenarioExists(name string) bool {
+	_, ok := p.seekers[name]
 	return ok
 }
 
-func (sc *scSeekerImpl) Look(scenario string, method string, url string) *http.Response {
-	seeker, ok := sc.seekers[scenario]
+func (p *scSeekerImpl) Look(scenario string, method string, url string) *http.Response {
+	seeker, ok := p.seekers[scenario]
 	if ok {
 		return seeker.Look(method, url)
 	}
