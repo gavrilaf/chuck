@@ -68,7 +68,7 @@ var _ = Describe("Seeker", func() {
 
 		recorder.SetFocusedMode(true)
 
-		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 2)
+		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users/678/off"), 2)
 		recorder.RecordResponse(createResponse(), 2)
 
 		path = "test"

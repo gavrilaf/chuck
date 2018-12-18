@@ -71,7 +71,7 @@ var _ = Describe("Scenario", func() {
 		recorder2, _ := NewRecorderWithFs("test/scenario-2", false, fs, log)
 		recorder2.SetFocusedMode(true)
 
-		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 1)
+		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users/113/on"), 1)
 		recorder2.RecordResponse(createResponse(), 1)
 	})
 
@@ -125,7 +125,7 @@ var _ = Describe("Scenario", func() {
 				})
 			})
 
-			Context("when request from scenario 2", func() {
+			Context("when request from scenario 2; looking using prefix", func() {
 				BeforeEach(func() {
 					resp = subject.Look("scenario-2", "GET", "https://secure.api.com/users")
 				})
