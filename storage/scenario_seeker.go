@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gavrilaf/chuck/utils"
@@ -10,10 +11,9 @@ import (
 type scSeekerImpl struct {
 	root    *afero.Afero
 	seekers map[string]Seeker
-	log     utils.Logger
 }
 
-func NewScenarioSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (ScenarioSeeker, error) {
+func NewScenarioSeekerWithFs(fs afero.Fs, folder string, log utils.Logger) (ScenarioSeeker, error) {
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
 	content, err := root.ReadDir("")
@@ -25,8 +25,7 @@ func NewScenarioSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Scen
 	for _, f := range content {
 		if f.IsDir() {
 			name := f.Name()
-			log.Info(name)
-			seeker, err := NewSeekerWithFs(name, root, log)
+			seeker, err := NewSeekerWithFs(root, name)
 			if err != nil {
 				log.Error("Couldn't create Seeker on %s: %v", name, err)
 			} else {
@@ -34,13 +33,9 @@ func NewScenarioSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Scen
 			}
 		}
 	}
-
-	log.Info("Scenario seeker created, loaded %d scenarious", len(seekers))
-
 	return &scSeekerImpl{
 		root:    root,
 		seekers: seekers,
-		log:     log,
 	}, nil
 }
 
@@ -49,10 +44,10 @@ func (p *scSeekerImpl) IsScenarioExists(name string) bool {
 	return ok
 }
 
-func (p *scSeekerImpl) Look(scenario string, method string, url string) *http.Response {
+func (p *scSeekerImpl) Look(scenario string, method string, url string) (*http.Response, error) {
 	seeker, ok := p.seekers[scenario]
 	if ok {
 		return seeker.Look(method, url)
 	}
-	return nil
+	return nil, fmt.Errorf("Unknow scenario: %s", scenario)
 }

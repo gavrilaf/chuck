@@ -17,7 +17,7 @@ type scRecorderImpl struct {
 	log      utils.Logger
 }
 
-func NewScenarioRecorderWithFs(folder string, createNewFolder bool, fs afero.Fs, log utils.Logger) (ScenarioRecorder, error) {
+func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
@@ -58,7 +58,7 @@ func (p *scRecorderImpl) Name() string {
 }
 
 func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorderWithFs(name, false, p.root, p.log)
+	recorder, err := NewRecorderWithFs(p.root, name, false, p.log)
 	if err != nil {
 		return err
 	}

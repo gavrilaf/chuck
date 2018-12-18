@@ -30,7 +30,7 @@ func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
 }
 
 func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
-	seeker, err := storage.NewSeeker(folder, log)
+	seeker, err := storage.NewSeeker(folder)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}

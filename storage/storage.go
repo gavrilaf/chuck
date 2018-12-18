@@ -25,32 +25,7 @@ type Recorder interface {
 
 func NewRecorder(folder string, createNewFolder bool, log utils.Logger) (Recorder, error) {
 	fs := afero.NewOsFs()
-	return NewRecorderWithFs(folder, createNewFolder, fs, log)
-}
-
-/*
- *
- */
-type Seeker interface {
-	Look(method string, url string) *http.Response
-}
-
-func NewSeeker(folder string, log utils.Logger) (Seeker, error) {
-	fs := afero.NewOsFs()
-	return NewSeekerWithFs(folder, fs, log)
-}
-
-/*
- *
- */
-type ScenarioSeeker interface {
-	IsScenarioExists(name string) bool
-	Look(scenario string, method string, url string) *http.Response
-}
-
-func NewScenarioSeeker(folder string, log utils.Logger) (ScenarioSeeker, error) {
-	fs := afero.NewOsFs()
-	return NewScenarioSeekerWithFs(folder, fs, log)
+	return NewRecorderWithFs(fs, folder, createNewFolder, log)
 }
 
 /*
@@ -65,5 +40,30 @@ type ScenarioRecorder interface {
 
 func NewScenarioRecorder(folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
 	fs := afero.NewOsFs()
-	return NewScenarioRecorderWithFs(folder, createNewFolder, fs, log)
+	return NewScenarioRecorderWithFs(fs, folder, createNewFolder, log)
+}
+
+/*
+ *
+ */
+type Seeker interface {
+	Look(method string, url string) (*http.Response, error)
+}
+
+func NewSeeker(folder string) (Seeker, error) {
+	fs := afero.NewOsFs()
+	return NewSeekerWithFs(fs, folder)
+}
+
+/*
+ *
+ */
+type ScenarioSeeker interface {
+	IsScenarioExists(name string) bool
+	Look(scenario string, method string, url string) (*http.Response, error)
+}
+
+func NewScenarioSeeker(folder string, log utils.Logger) (ScenarioSeeker, error) {
+	fs := afero.NewOsFs()
+	return NewScenarioSeekerWithFs(fs, folder, log)
 }

@@ -15,10 +15,9 @@ import (
 type seekerImpl struct {
 	root  *afero.Afero
 	index Index
-	log   utils.Logger
 }
 
-func NewSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Seeker, error) {
+func NewSeekerWithFs(fs afero.Fs, folder string) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
 	if !logDirExists {
@@ -35,28 +34,25 @@ func NewSeekerWithFs(folder string, fs afero.Fs, log utils.Logger) (Seeker, erro
 	seeker := &seekerImpl{
 		index: index,
 		root:  root,
-		log:   log,
 	}
 
 	return seeker, nil
 }
 
-func (seeker *seekerImpl) Look(method string, url string) *http.Response {
+func (seeker *seekerImpl) Look(method string, url string) (*http.Response, error) {
 	item := seeker.index.Find(method, url, SEARCH_SUBSTR)
 	if item == nil {
-		return nil
+		return nil, nil
 	}
 
 	header, err := seeker.readHeader(item.Folder + "/resp_header.json")
 	if err != nil {
-		seeker.log.Error("Read header error for %s: %v", item.Folder, err)
-		return nil
+		return nil, fmt.Errorf("Read header error for %s: %v", item.Folder, err)
 	}
 
 	body, err := seeker.readBody(item.Folder + "/resp_body.json")
 	if err != nil {
-		seeker.log.Error("Read header body for %s: %v", item.Folder, err)
-		return nil
+		return nil, fmt.Errorf("Read header body for %s: %v", item.Folder, err)
 	}
 
 	response := &http.Response{
@@ -68,7 +64,7 @@ func (seeker *seekerImpl) Look(method string, url string) *http.Response {
 		Body:       body,
 	}
 
-	return response
+	return response, nil
 }
 
 /*

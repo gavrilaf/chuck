@@ -15,7 +15,10 @@ type seekerHandler struct {
 
 func (p *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	method, url := req.Method, req.URL.String()
-	resp := p.seeker.Look(method, url)
+	resp, err := p.seeker.Look(method, url)
+	if err != nil {
+		p.log.Error("Searching request error, %s : %s, (%v)", method, url, err)
+	}
 	if resp != nil {
 		p.log.FocusedReq(req.Method, req.URL.String(), resp.StatusCode)
 	}
