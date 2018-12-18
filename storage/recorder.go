@@ -141,18 +141,13 @@ func (recorder *recorderImpl) RecordResponse(resp *http.Response, session int64)
 	elapsed := time.Since(req.started)
 	recorder.log.Request(req.id, req.method, req.url, resp.StatusCode, elapsed)
 
-	mode := "N"
-	if recorder.focused {
-		mode = "F"
-	}
-
-	line := fmt.Sprintf("%s\tr_%d\t%s\t%s\t%d\n", mode, req.id, req.method, req.url, resp.StatusCode)
-	_, err := recorder.indexFile.WriteString(line)
+	folder := "r_" + strconv.FormatInt(req.id, 10)
+	line := FormatIndexItem(req.method, req.url, resp.StatusCode, folder, recorder.focused)
+	_, err := recorder.indexFile.WriteString(line + "\n")
 	if err != nil {
 		return 0, err
 	}
 
-	folder := "r_" + strconv.FormatInt(req.id, 10)
 	err = recorder.writeHeader(folder+"/resp_header.json", resp.Header)
 	if err != nil {
 		recorder.log.Error("Couldn't write response header: %v", err)

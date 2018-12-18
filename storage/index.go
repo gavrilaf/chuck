@@ -27,7 +27,7 @@ func NewIndex() Index {
 	}
 }
 
-func LoadIndex(fs afero.Fs, file string) (Index, error) {
+func LoadIndex(fs afero.Fs, file string, focused bool) (Index, error) {
 	fp, err := fs.Open(file)
 	if err != nil {
 		return nil, err
@@ -40,12 +40,15 @@ func LoadIndex(fs afero.Fs, file string) (Index, error) {
 	lineIndex := 0
 	for scanner.Scan() {
 		line := scanner.Text()
+		//fmt.Printf("\n****%s\n\n", line)
 		item := ParseIndexItem(line)
 		if item == nil {
 			return nil, fmt.Errorf("Couldn't parse line %d", lineIndex)
 		}
 		lineIndex += 1
-		index.Add(*item)
+		if !focused || item.Focused {
+			index.Add(*item)
+		}
 	}
 
 	return index, nil

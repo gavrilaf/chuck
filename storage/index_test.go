@@ -63,21 +63,39 @@ var _ = Describe("Index", func() {
 				fp.WriteString(item1.Format() + "\n")
 				fp.WriteString(item2.Format() + "\n")
 				fp.Close()
-
-				subject, err = LoadIndex(root, "index.txt")
 			})
 
-			It("should return nil error", func() {
-				Expect(err).To(BeNil())
+			Context("when focused is false", func() {
+				BeforeEach(func() {
+					subject, err = LoadIndex(root, "index.txt", false)
+				})
+
+				It("should return nil error", func() {
+					Expect(err).To(BeNil())
+				})
+
+				It("should contain 2 items", func() {
+					Expect(subject.Size()).To(Equal(2))
+				})
+
+				It("should contain correct items", func() {
+					Expect(subject.Get(0)).To(Equal(item1))
+					Expect(subject.Get(1)).To(Equal(item2))
+				})
 			})
 
-			It("should contain 2 items", func() {
-				Expect(subject.Size()).To(Equal(2))
-			})
+			Context("when focused is true", func() {
+				BeforeEach(func() {
+					subject, err = LoadIndex(root, "index.txt", true)
+				})
 
-			It("should correct parse file", func() {
-				Expect(subject.Get(0)).To(Equal(item1))
-				Expect(subject.Get(1)).To(Equal(item2))
+				It("should contain 1 item", func() {
+					Expect(subject.Size()).To(Equal(1))
+				})
+
+				It("should contains correct items", func() {
+					Expect(subject.Get(0)).To(Equal(item2))
+				})
 			})
 		})
 	})
