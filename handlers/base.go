@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"regexp"
 
 	"github.com/gavrilaf/chuck/storage"
 	"github.com/gavrilaf/chuck/utils"
@@ -58,8 +57,3 @@ func NewScenarioRecorderHandler(folder string, log utils.Logger) ProxyHandler {
 
 	return NewScenarioHandlerWithRecorder(recorder, log)
 }
-
-var (
-	activateScRegx       = regexp.MustCompile("/scenario/(.*)/(.*)/no")
-	testIdentifierHeader = http.CanonicalHeaderKey("aadhi-identifier")
-)

@@ -13,7 +13,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 )
 
 var _ = Describe("Scenario", func() {
@@ -27,10 +26,7 @@ var _ = Describe("Scenario", func() {
 	)
 
 	BeforeEach(func() {
-		log = NewLogger(&cli.BasicUi{
-			Writer:      os.Stdout,
-			ErrorWriter: os.Stderr,
-		})
+		log = NewLogger(cli.NewMockUi())
 
 		createRequest = func(method string, url string) *http.Request {
 			req, _ := http.NewRequest(method, url, ioutil.NopCloser(bytes.NewBufferString("")))
