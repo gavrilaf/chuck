@@ -61,14 +61,14 @@ var _ = Describe("Seeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder, _ = NewRecorderWithFs("test", false, fs, log)
+		recorder, _ = NewRecorderWithFs(fs, "test", false, log)
 
 		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder.RecordResponse(createResponse(), 1)
 
 		recorder.SetFocusedMode(true)
 
-		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 2)
+		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users/678/off"), 2)
 		recorder.RecordResponse(createResponse(), 2)
 
 		path = "test"
@@ -79,7 +79,7 @@ var _ = Describe("Seeker", func() {
 			err error
 		)
 		BeforeEach(func() {
-			subject, err = NewSeekerWithFs(path, root, log)
+			subject, err = NewSeekerWithFs(root, path)
 		})
 
 		It("should return nil error", func() {
@@ -97,7 +97,7 @@ var _ = Describe("Seeker", func() {
 
 			Context("when request logged as focused", func() {
 				BeforeEach(func() {
-					resp = subject.Look("GET", "https://secure.api.com/users")
+					resp, _ = subject.Look("GET", "https://secure.api.com/users")
 				})
 
 				It("should return request", func() {
@@ -122,7 +122,7 @@ var _ = Describe("Seeker", func() {
 
 			Context("when request logged as unfocused", func() {
 				BeforeEach(func() {
-					resp = subject.Look("POST", "https://secure.api.com/login")
+					resp, _ = subject.Look("POST", "https://secure.api.com/login")
 				})
 
 				It("should return nil", func() {

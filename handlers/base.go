@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"regexp"
 
 	"github.com/gavrilaf/chuck/storage"
 	"github.com/gavrilaf/chuck/utils"
@@ -30,7 +29,7 @@ func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
 }
 
 func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
-	seeker, err := storage.NewSeeker(folder, log)
+	seeker, err := storage.NewSeeker(folder)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}
@@ -42,7 +41,7 @@ func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
 }
 
 func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
-	seeker, err := storage.NewScSeeker(folder, log)
+	seeker, err := storage.NewScenarioSeeker(folder, log)
 	if err != nil {
 		log.Panic("Could not create requests scenario seeker: %v", err)
 	}
@@ -51,15 +50,10 @@ func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
 }
 
 func NewScenarioRecorderHandler(folder string, log utils.Logger) ProxyHandler {
-	recorder, err := storage.NewScRecorder(folder, true, log)
+	recorder, err := storage.NewScenarioRecorder(folder, true, log)
 	if err != nil {
 		log.Panic("Could not create requests scenario recorder: %v", err)
 	}
 
 	return NewScenarioHandlerWithRecorder(recorder, log)
 }
-
-var (
-	activateScRegx       = regexp.MustCompile("/scenario/(.*)/(.*)/no")
-	testIdentifierHeader = http.CanonicalHeaderKey("aadhi-identifier")
-)

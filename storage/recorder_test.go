@@ -80,7 +80,7 @@ var _ = Describe("Recorder", func() {
 
 		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
-				subject, err = NewRecorderWithFs(folder, true, root.Fs, log)
+				subject, err = NewRecorderWithFs(root.Fs, folder, true, log)
 
 				path := folder + "/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
@@ -106,7 +106,7 @@ var _ = Describe("Recorder", func() {
 
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
-				subject, err = NewRecorderWithFs(folder, false, root.Fs, log)
+				subject, err = NewRecorderWithFs(root.Fs, folder, false, log)
 
 				indexExists, _ = root.Exists(folder + "/index.txt")
 			})
@@ -138,7 +138,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewRecorderWithFs("log", true, root.Fs, log)
+			subject, _ = NewRecorderWithFs(root.Fs, "log", true, log)
 			basePath = "log/" + subject.Name()
 			session = 10
 			req = createRequest()
@@ -201,7 +201,7 @@ var _ = Describe("Recorder", func() {
 					scanner.Scan()
 					line := scanner.Text()
 
-					expected := fmt.Sprintf("N\tr_%d\tPOST\thttps://secure.api.com?query=123\t200", reqId)
+					expected := fmt.Sprintf("N,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqId)
 					Expect(expected).To(Equal(line))
 				})
 
@@ -230,7 +230,7 @@ var _ = Describe("Recorder", func() {
 					scanner.Scan()
 					line := scanner.Text()
 
-					expected := fmt.Sprintf("F\tr_%d\tPOST\thttps://secure.api.com?query=123\t200", reqId)
+					expected := fmt.Sprintf("F,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqId)
 					Expect(expected).To(Equal(line))
 				})
 			})

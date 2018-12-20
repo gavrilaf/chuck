@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
-	"os"
+	//"os"
 )
 
 var _ = Describe("Scenario", func() {
@@ -24,10 +24,11 @@ var _ = Describe("Scenario", func() {
 	)
 
 	BeforeEach(func() {
-		log = NewLogger(&cli.BasicUi{
+		/*log = NewLogger(&cli.BasicUi{
 			Writer:      os.Stdout,
 			ErrorWriter: os.Stderr,
-		})
+		})*/
+		log = NewLogger(&cli.MockUi{})
 
 		header := make(http.Header)
 		header.Set("Content-Type", "application/json")
@@ -61,27 +62,27 @@ var _ = Describe("Scenario", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder1, _ := NewRecorderWithFs("test/scenario-1", false, fs, log)
+		recorder1, _ := NewRecorderWithFs(fs, "test/scenario-1", false, log)
 		recorder1.SetFocusedMode(true)
 
 		recorder1.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder1.RecordResponse(createResponse(), 1)
 
-		recorder2, _ := NewRecorderWithFs("test/scenario-2", false, fs, log)
+		recorder2, _ := NewRecorderWithFs(fs, "test/scenario-2", false, log)
 		recorder2.SetFocusedMode(true)
 
-		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 1)
+		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users/113/on"), 1)
 		recorder2.RecordResponse(createResponse(), 1)
 	})
 
 	Describe("Open Scenario", func() {
 		var (
 			err     error
-			subject ScSeeker
+			subject ScenarioSeeker
 		)
 
 		BeforeEach(func() {
-			subject, err = NewScSeekerWithFs("test", root, log)
+			subject, err = NewScenarioSeekerWithFs(root, "test", log)
 		})
 
 		It("should return nil error", func() {
@@ -112,11 +113,12 @@ var _ = Describe("Scenario", func() {
 		Describe("looking for request", func() {
 			var (
 				resp *http.Response
+				err  error
 			)
 
 			Context("when request from scenario 1", func() {
 				BeforeEach(func() {
-					resp = subject.Look("scenario-1", "POST", "https://secure.api.com/login")
+					resp, _ = subject.Look("scenario-1", "POST", "https://secure.api.com/login")
 				})
 
 				It("should find response", func() {
@@ -124,9 +126,9 @@ var _ = Describe("Scenario", func() {
 				})
 			})
 
-			Context("when request from scenario 2", func() {
+			Context("when request from scenario 2; looking using prefix", func() {
 				BeforeEach(func() {
-					resp = subject.Look("scenario-2", "GET", "https://secure.api.com/users")
+					resp, _ = subject.Look("scenario-2", "GET", "https://secure.api.com/users")
 				})
 
 				It("should find response", func() {
@@ -135,12 +137,17 @@ var _ = Describe("Scenario", func() {
 			})
 
 			Context("when request from unknown scenarion", func() {
+
 				BeforeEach(func() {
-					resp = subject.Look("scenarion-6666", "GET", "https://secure.api.com/users")
+					resp, err = subject.Look("scenarion-6666", "GET", "https://secure.api.com/users")
 				})
 
-				It("should return nil", func() {
+				It("should return nil response", func() {
 					Expect(resp).To(BeNil())
+				})
+
+				It("should return error", func() {
+					Expect(err).ToNot(BeNil())
 				})
 			})
 		})

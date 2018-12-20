@@ -11,13 +11,13 @@ import (
 	"github.com/spf13/afero"
 	"io/ioutil"
 	"net/http"
-	"os"
+	//"os"
 )
 
 var _ = Describe("ScenarioRecorder", func() {
 	var (
 		log     Logger
-		subject ScRecorder
+		subject ScenarioRecorder
 		folder  string
 		root    *afero.Afero
 
@@ -26,10 +26,11 @@ var _ = Describe("ScenarioRecorder", func() {
 	)
 
 	BeforeEach(func() {
-		log = NewLogger(&cli.BasicUi{
+		/*log = NewLogger(&cli.BasicUi{
 			Writer:      os.Stdout,
 			ErrorWriter: os.Stderr,
-		})
+		})*/
+		log = NewLogger(&cli.MockUi{})
 
 		createRequest = func() *http.Request {
 			req, _ := http.NewRequest("POST", "https://secure.api.com?query=123", ioutil.NopCloser(bytes.NewBufferString("")))
@@ -61,7 +62,7 @@ var _ = Describe("ScenarioRecorder", func() {
 
 		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
-				subject, err = NewScRecorderWithFs(folder, false, root, log)
+				subject, err = NewScenarioRecorderWithFs(root, folder, false, log)
 				dirExists, _ = root.DirExists(folder)
 
 				path := folder + "/" + subject.Name()
@@ -83,7 +84,7 @@ var _ = Describe("ScenarioRecorder", func() {
 
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
-				subject, err = NewScRecorderWithFs(folder, false, root, log)
+				subject, err = NewScenarioRecorderWithFs(root, folder, false, log)
 				dirExists, _ = root.DirExists(folder)
 			})
 

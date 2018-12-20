@@ -10,10 +10,6 @@ import (
 	"github.com/spf13/afero"
 )
 
-var (
-	errNoScenario = fmt.Errorf("No scenario activated")
-)
-
 type scRecorderImpl struct {
 	root     *afero.Afero
 	name     string
@@ -21,7 +17,7 @@ type scRecorderImpl struct {
 	log      utils.Logger
 }
 
-func NewScRecorderWithFs(folder string, createNewFolder bool, fs afero.Fs, log utils.Logger) (ScRecorder, error) {
+func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
@@ -62,7 +58,7 @@ func (p *scRecorderImpl) Name() string {
 }
 
 func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorderWithFs(name, false, p.root, p.log)
+	recorder, err := NewRecorderWithFs(p.root, name, false, p.log)
 	if err != nil {
 		return err
 	}
@@ -77,14 +73,14 @@ func (p *scRecorderImpl) ActivateScenario(name string) error {
 
 func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (int64, error) {
 	if p.recorder == nil {
-		return 0, errNoScenario
+		return 0, ErrScenarioNotFound
 	}
 	return p.recorder.RecordRequest(req, session)
 }
 
 func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (int64, error) {
 	if p.recorder == nil {
-		return 0, errNoScenario
+		return 0, ErrScenarioNotFound
 	}
 	return p.recorder.RecordResponse(resp, session)
 }

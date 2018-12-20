@@ -13,24 +13,20 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 )
 
-var _ = Describe("Scenario", func() {
+var _ = Describe("ScenarioSeeker", func() {
 	var (
 		log      Logger
 		root     *afero.Afero
-		scSeeker ScSeeker
+		scSeeker ScenarioSeeker
 
 		createRequest  func(method string, url string) *http.Request
 		createResponse func() *http.Response
 	)
 
 	BeforeEach(func() {
-		log = NewLogger(&cli.BasicUi{
-			Writer:      os.Stdout,
-			ErrorWriter: os.Stderr,
-		})
+		log = NewLogger(cli.NewMockUi())
 
 		createRequest = func(method string, url string) *http.Request {
 			req, _ := http.NewRequest(method, url, ioutil.NopCloser(bytes.NewBufferString("")))
@@ -52,19 +48,19 @@ var _ = Describe("Scenario", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder1, _ := NewRecorderWithFs("test/scenario-1", false, fs, log)
+		recorder1, _ := NewRecorderWithFs(fs, "test/scenario-1", false, log)
 		recorder1.SetFocusedMode(true)
 
 		recorder1.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder1.RecordResponse(createResponse(), 1)
 
-		recorder2, _ := NewRecorderWithFs("test/scenario-2", false, fs, log)
+		recorder2, _ := NewRecorderWithFs(fs, "test/scenario-2", false, log)
 		recorder2.SetFocusedMode(true)
 
 		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 1)
 		recorder2.RecordResponse(createResponse(), 1)
 
-		scSeeker, _ = NewScSeekerWithFs("test", root, log)
+		scSeeker, _ = NewScenarioSeekerWithFs(root, "test", log)
 	})
 
 	Describe("Open scenario proxy handler", func() {
@@ -109,7 +105,7 @@ var _ = Describe("Scenario", func() {
 				BeforeEach(func() {
 					req := createRequest("POST", "https://secure.api.com/login")
 					req.Header = make(http.Header)
-					req.Header.Set(AADHIIdentifier, "scenario-1-id")
+					req.Header.Set(ScenarioIdHeader, "scenario-1-id")
 					resp = subject.Request(req, nil)
 				})
 
