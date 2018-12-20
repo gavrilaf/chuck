@@ -15,7 +15,7 @@ import (
 	"net/http/httptest"
 )
 
-var _ = Describe("Scenario", func() {
+var _ = Describe("ScenarioSeeker", func() {
 	var (
 		log      Logger
 		root     *afero.Afero
@@ -105,7 +105,7 @@ var _ = Describe("Scenario", func() {
 				BeforeEach(func() {
 					req := createRequest("POST", "https://secure.api.com/login")
 					req.Header = make(http.Header)
-					req.Header.Set(AADHIIdentifier, "scenario-1-id")
+					req.Header.Set(ScenarioIdHeader, "scenario-1-id")
 					resp = subject.Request(req, nil)
 				})
 

@@ -8,25 +8,21 @@ import (
 	"gopkg.in/elazarl/goproxy.v1"
 )
 
-const (
-	AADHIIdentifier = "aadhi-identifier"
-)
-
-type scenarioHandler struct {
+type scenarioSeekerHandler struct {
 	seeker    storage.ScenarioSeeker
 	log       utils.Logger
 	scenarios map[string]string
 }
 
 func NewScenarioHandlerWithSeeker(seeker storage.ScenarioSeeker, log utils.Logger) ProxyHandler {
-	return &scenarioHandler{
+	return &scenarioSeekerHandler{
 		seeker:    seeker,
 		log:       log,
 		scenarios: make(map[string]string),
 	}
 }
 
-func (p *scenarioHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
+func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	method := req.Method
 	url := req.URL.String()
 	id := GetScenarioId(req)
@@ -52,17 +48,17 @@ func (p *scenarioHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *htt
 	return nil
 }
 
-func (p *scenarioHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
+func (p *scenarioSeekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 
 }
 
-func (p *scenarioHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
+func (p *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
 	p.tryToActivateScenario(w, req)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func (p *scenarioHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
+func (p *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
 	sc := ParseActivateScenarioRequest(req)
 	if sc == nil {
 		return
