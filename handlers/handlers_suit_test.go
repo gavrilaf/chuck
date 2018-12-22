@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestStorage(t *testing.T) {
+func TestHandlers(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Storage Suite")
+	RunSpecs(t, "Handlers Suite")
 }
