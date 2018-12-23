@@ -18,6 +18,7 @@ type scRecorderImpl struct {
 }
 
 func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
+	// TODO: move to the shared code
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {

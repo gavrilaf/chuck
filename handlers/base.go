@@ -15,8 +15,10 @@ type ProxyHandler interface {
 	NonProxyHandler(w http.ResponseWriter, req *http.Request)
 }
 
-func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
-	recorder, err := storage.NewRecorder(folder, true, log)
+// Factories
+
+func NewRecorderHandler(config *RecorderConfig, log utils.Logger) ProxyHandler {
+	recorder, err := storage.NewRecorder(config.Folder, config.CreateNewFolder, log)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}
@@ -24,12 +26,12 @@ func NewRecordHandler(folder string, log utils.Logger) ProxyHandler {
 	return &recordHandler{
 		recorder:       recorder,
 		log:            log,
-		preventCaching: true,
+		preventCaching: config.Prevent304,
 	}
 }
 
-func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
-	seeker, err := storage.NewSeeker(folder)
+func NewSeekerHandler(config *SeekerConfig, log utils.Logger) ProxyHandler {
+	seeker, err := storage.NewSeeker(config.Folder)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}
@@ -40,8 +42,8 @@ func NewSeekerHandler(folder string, log utils.Logger) ProxyHandler {
 	}
 }
 
-func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
-	seeker, err := storage.NewScenarioSeeker(folder, log)
+func NewScenarioSeekerHandler(config *ScenarioSeekerConfig, log utils.Logger) ProxyHandler {
+	seeker, err := storage.NewScenarioSeeker(config.Folder, log)
 	if err != nil {
 		log.Panic("Could not create requests scenario seeker: %v", err)
 	}
@@ -49,8 +51,8 @@ func NewScenarioHandler(folder string, log utils.Logger) ProxyHandler {
 	return NewScenarioHandlerWithSeeker(seeker, log)
 }
 
-func NewScenarioRecorderHandler(folder string, log utils.Logger) ProxyHandler {
-	recorder, err := storage.NewScenarioRecorder(folder, true, log)
+func NewScenarioRecorderHandler(config *ScenarioRecorderConfig, log utils.Logger) ProxyHandler {
+	recorder, err := storage.NewScenarioRecorder(config.Folder, true, log)
 	if err != nil {
 		log.Panic("Could not create requests scenario recorder: %v", err)
 	}
