@@ -6,12 +6,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"bytes"
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
-	"io/ioutil"
 	"net/http"
-	//"os"
 )
 
 var _ = Describe("Scenario", func() {
@@ -24,39 +21,21 @@ var _ = Describe("Scenario", func() {
 	)
 
 	BeforeEach(func() {
-		/*log = NewLogger(&cli.BasicUi{
-			Writer:      os.Stdout,
-			ErrorWriter: os.Stderr,
-		})*/
 		log = NewLogger(&cli.MockUi{})
 
 		header := make(http.Header)
 		header.Set("Content-Type", "application/json")
 		header.Set("Access-Token", "Bearer-12234")
 
-		respBody := "{}"
+		body := "{}"
 
 		createRequest = func(method string, url string) *http.Request {
-			str := "{}"
-			req, _ := http.NewRequest(method, url, ioutil.NopCloser(bytes.NewBufferString(str)))
-			req.Header.Set("Content-Type", "application/json")
+			req, _ := MakeRequest2(method, url, header, body)
 			return req
 		}
 
 		createResponse = func() *http.Response {
-			respBody = `{"colors": []}`
-
-			resp := &http.Response{
-				Status:        "200 OK",
-				StatusCode:    200,
-				Proto:         "HTTP/1.1",
-				ProtoMajor:    1,
-				ProtoMinor:    1,
-				Header:        header,
-				Body:          ioutil.NopCloser(bytes.NewBufferString(respBody)),
-				ContentLength: int64(len(respBody)),
-			}
-			return resp
+			return MakeResponse2(200, header, body)
 		}
 
 		fs := afero.NewMemMapFs()
@@ -85,8 +64,8 @@ var _ = Describe("Scenario", func() {
 			subject, err = NewScenarioSeekerWithFs(root, "test", log)
 		})
 
-		It("should return nil error", func() {
-			Expect(err).To(BeNil())
+		It("should not error occurred", func() {
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("should create scenario seeker", func() {

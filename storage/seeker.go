@@ -55,16 +55,7 @@ func (seeker *seekerImpl) Look(method string, url string) (*http.Response, error
 		return nil, fmt.Errorf("Read header body for %s: %v", item.Folder, err)
 	}
 
-	response := &http.Response{
-		StatusCode: item.Code,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-		Header:     header,
-		Body:       body,
-	}
-
-	return response, nil
+	return utils.MakeResponse(item.Code, header, body, 0), nil
 }
 
 /*

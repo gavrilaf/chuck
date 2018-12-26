@@ -7,11 +7,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"bufio"
-	"bytes"
 	"fmt"
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -28,39 +26,19 @@ var _ = Describe("Recorder", func() {
 
 	BeforeEach(func() {
 		createRequest = func() *http.Request {
-			str := "{}"
-			req, _ := http.NewRequest("POST", "https://secure.api.com?query=123", ioutil.NopCloser(bytes.NewBufferString(str)))
-			req.Header.Set("Content-Type", "application/json")
+			header := make(http.Header)
+			header.Set("Content-Type", "application/json")
+			req, _ := MakeRequest2("POST", "https://secure.api.com?query=123", header, "{}")
 			return req
 		}
 
 		createResponse = func() *http.Response {
-			str := `{
-				"colors": [
-				  {
-					"color": "white",
-					"category": "value",
-					"code": {
-					  "rgba": [0,0,0,1],
-					  "hex": "#FFF"
-					}
-				  },]}`
+			body := `{"colors": []}`
+			header := make(http.Header)
+			header.Set("Content-Type", "application/json")
+			header.Set("Content-Length", "6573")
 
-			resp := &http.Response{
-				Status:        "200 OK",
-				StatusCode:    200,
-				Proto:         "HTTP/1.1",
-				ProtoMajor:    1,
-				ProtoMinor:    1,
-				Header:        make(http.Header),
-				Body:          ioutil.NopCloser(bytes.NewBufferString(str)),
-				ContentLength: int64(len(str)),
-			}
-
-			resp.Header.Set("Content-Type", "application/json")
-			resp.Header.Set("Content-Length", "6573")
-
-			return resp
+			return MakeResponse2(200, header, body)
 		}
 
 		log = NewLogger(cli.NewMockUi())
@@ -87,15 +65,15 @@ var _ = Describe("Recorder", func() {
 				indexExists, _ = root.Exists(path + "/index.txt")
 			})
 
-			It("should return nil error", func() {
-				Expect(err).To(BeNil())
+			It("should not error occurred", func() {
+				Expect(err).ToNot(HaveOccurred())
 			})
 
-			It("should return Logger object", func() {
+			It("should return Recorder object", func() {
 				Expect(subject).ToNot(BeNil())
 			})
 
-			It("should create a logger folder", func() {
+			It("should create a recorder root logger folder", func() {
 				Expect(dirExists).To(BeTrue())
 			})
 
@@ -107,16 +85,11 @@ var _ = Describe("Recorder", func() {
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
 				subject, err = NewRecorderWithFs(root.Fs, folder, false, log)
-
 				indexExists, _ = root.Exists(folder + "/index.txt")
 			})
 
-			It("should return nil error", func() {
-				Expect(err).To(BeNil())
-			})
-
-			It("should return empty Name", func() {
-				Expect(subject.Name()).To(Equal(""))
+			It("should not error occurred", func() {
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("should create an index file", func() {
@@ -145,7 +118,7 @@ var _ = Describe("Recorder", func() {
 			resp = createResponse()
 		})
 
-		It("should PendingCount equal to 0", func() {
+		It("should contains no pending requests", func() {
 			Expect(subject.PendingCount()).To(Equal(0))
 		})
 
@@ -155,11 +128,11 @@ var _ = Describe("Recorder", func() {
 				dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqId)
 			})
 
-			It("should return nil error", func() {
-				Expect(err).To(BeNil())
+			It("should not error occurred", func() {
+				Expect(err).ToNot(HaveOccurred())
 			})
 
-			It("should PendingCount equal to 1", func() {
+			It("should contain one pending request", func() {
 				Expect(subject.PendingCount()).To(Equal(1))
 			})
 
@@ -183,11 +156,11 @@ var _ = Describe("Recorder", func() {
 					respId, err = subject.RecordResponse(resp, session)
 				})
 
-				It("should return nil error", func() {
-					Expect(err).To(BeNil())
+				It("should not error occurred", func() {
+					Expect(err).ToNot(HaveOccurred())
 				})
 
-				It("should PendingCount equal to 0", func() {
+				It("should contains no pending requests", func() {
 					Expect(subject.PendingCount()).To(Equal(0))
 				})
 
