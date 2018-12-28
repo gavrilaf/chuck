@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,13 +25,14 @@ type recorderImpl struct {
 	focused   bool
 	root      *afero.Afero
 	indexFile afero.File
+	index     Index
 	counter   int64
 	pending   map[int64]pendingRequest
 	mux       *sync.Mutex
 	log       utils.Logger
 }
 
-func NewRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (Recorder, error) {
+func NewRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, onlyNew bool, log utils.Logger) (Recorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
@@ -58,16 +60,31 @@ func NewRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log uti
 	}
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
-	file, err := root.Create("index.txt")
+	indexFp, err := root.OpenFile("index.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
 		return nil, err
+	}
+
+	counter := 1
+	var index Index
+	if onlyNew {
+		//content, err := root.ReadFile("index.txt")
+		//fmt.Printf("\n***Err: %v, Index: \n%s\n\n", err, string(content))
+		index, err = LoadIndex2(root, "index.txt", false)
+		if err != nil {
+			return nil, err
+		}
+
+		counter = index.Size() + 1
+		//fmt.Printf("\n*** Loading index with %d records\n\n", index.Size())
 	}
 
 	return &recorderImpl{
 		name:      name,
 		root:      root,
-		indexFile: file,
-		counter:   1,
+		indexFile: indexFp,
+		index:     index,
+		counter:   int64(counter),
 		pending:   make(map[int64]pendingRequest, 10),
 		mux:       &sync.Mutex{},
 		log:       log,
@@ -97,6 +114,23 @@ func (recorder *recorderImpl) RecordRequest(req *http.Request, session int64) (i
 	recorder.mux.Lock()
 	defer recorder.mux.Unlock()
 
+	method := req.Method
+	url := req.URL.String()
+
+	if recorder.index != nil {
+		if recorder.index.Find(method, url, SEARCH_SUBSTR) != nil {
+			return -1, nil
+		} else {
+			recorder.index.Add(IndexItem{
+				Focused: false,
+				Method:  method,
+				Url:     url,
+				Code:    0,
+				Folder:  "",
+			})
+		}
+	}
+
 	id := recorder.counter
 	folder := "r_" + strconv.FormatInt(id, 10)
 
@@ -107,8 +141,8 @@ func (recorder *recorderImpl) RecordRequest(req *http.Request, session int64) (i
 
 	recorder.pending[session] = pendingRequest{
 		id:      id,
-		method:  req.Method,
-		url:     req.URL.String(),
+		method:  method,
+		url:     url,
 		started: time.Now(),
 	}
 
@@ -133,7 +167,11 @@ func (recorder *recorderImpl) RecordResponse(resp *http.Response, session int64)
 
 	req, ok := recorder.pending[session]
 	if !ok {
-		recorder.log.Panic("Could not find request for session: %d", session)
+		if recorder.index != nil {
+			return -1, nil
+		} else {
+			recorder.log.Panic("Could not find request for session: %d", session)
+		}
 	}
 
 	delete(recorder.pending, session)

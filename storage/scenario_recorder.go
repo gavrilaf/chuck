@@ -59,7 +59,7 @@ func (p *scRecorderImpl) Name() string {
 }
 
 func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorderWithFs(p.root, name, false, p.log)
+	recorder, err := NewRecorderWithFs(p.root, name, false, true, p.log)
 	if err != nil {
 		return err
 	}

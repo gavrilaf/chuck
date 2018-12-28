@@ -18,7 +18,7 @@ type ProxyHandler interface {
 // Factories
 
 func NewRecorderHandler(config *RecorderConfig, log utils.Logger) ProxyHandler {
-	recorder, err := storage.NewRecorder(config.Folder, config.CreateNewFolder, log)
+	recorder, err := storage.NewRecorder(config.Folder, config.CreateNewFolder, false, log)
 	if err != nil {
 		log.Panic("Could not create requests recorder: %v", err)
 	}

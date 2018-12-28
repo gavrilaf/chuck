@@ -23,9 +23,9 @@ type Recorder interface {
 	Close()
 }
 
-func NewRecorder(folder string, createNewFolder bool, log utils.Logger) (Recorder, error) {
+func NewRecorder(folder string, createNewFolder bool, newOnly bool, log utils.Logger) (Recorder, error) {
 	fs := afero.NewOsFs()
-	return NewRecorderWithFs(fs, folder, createNewFolder, log)
+	return NewRecorderWithFs(fs, folder, createNewFolder, newOnly, log)
 }
 
 /*

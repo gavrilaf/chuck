@@ -47,7 +47,7 @@ var _ = Describe("Seeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder, _ = NewRecorderWithFs(fs, "test", false, log)
+		recorder, _ = NewRecorderWithFs(fs, "test", false, false, log)
 
 		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder.RecordResponse(createResponse(), 1)
