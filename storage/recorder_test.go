@@ -99,12 +99,13 @@ var _ = Describe("Recorder", func() {
 		var (
 			basePath string
 			dumpPath string
-			err      error
-			reqId    int64
-			respId   int64
 			session  int64
 			req      *http.Request
 			resp     *http.Response
+
+			err        error
+			reqResult  *PendingRequest
+			respResult *PendingRequest
 		)
 
 		BeforeEach(func() {
@@ -121,16 +122,16 @@ var _ = Describe("Recorder", func() {
 
 		Describe("Record request", func() {
 			BeforeEach(func() {
-				reqId, err = subject.RecordRequest(req, session)
-				dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqId)
+				reqResult, err = subject.RecordRequest(req, session)
+				dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqResult.Id)
 			})
 
 			It("should not error occurred", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 
-			It("should contain one pending request", func() {
-				Expect(subject.PendingCount()).To(Equal(1))
+			It("should return pending request", func() {
+				Expect(reqResult).ToNot(BeNil())
 			})
 
 			It("should create request dump folder", func() {
@@ -150,19 +151,11 @@ var _ = Describe("Recorder", func() {
 
 			Describe("Record response", func() {
 				BeforeEach(func() {
-					respId, err = subject.RecordResponse(resp, session)
+					respResult, err = subject.RecordResponse(resp, session)
 				})
 
 				It("should not error occurred", func() {
 					Expect(err).ToNot(HaveOccurred())
-				})
-
-				It("should contains no pending requests", func() {
-					Expect(subject.PendingCount()).To(Equal(0))
-				})
-
-				It("should request id equal to response id", func() {
-					Expect(reqId).To(Equal(respId))
 				})
 
 				It("should index.txt contains log record", func() {
@@ -173,7 +166,7 @@ var _ = Describe("Recorder", func() {
 					scanner.Scan()
 					line := scanner.Text()
 
-					expected := fmt.Sprintf("N,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqId)
+					expected := fmt.Sprintf("N,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", respResult.Id)
 					Expect(expected).To(Equal(line))
 				})
 
@@ -190,7 +183,6 @@ var _ = Describe("Recorder", func() {
 				Describe("Create new_only recorder based on the same dir", func() {
 					var (
 						subjectNew Recorder
-						reqId      int64
 					)
 
 					BeforeEach(func() {
@@ -207,47 +199,43 @@ var _ = Describe("Recorder", func() {
 
 					Context("when record the request with the same method and url", func() {
 						BeforeEach(func() {
-							reqId, err = subjectNew.RecordRequest(req, 101)
+							reqResult, err = subjectNew.RecordRequest(req, 101)
 						})
 
 						It("should not error occurred", func() {
 							Expect(err).ToNot(HaveOccurred())
 						})
 
-						It("should not return request id for second request", func() {
-							Expect(reqId).To(Equal(int64(-1)))
-						})
-
-						It("should contains no pending requests", func() {
-							Expect(subject.PendingCount()).To(Equal(0))
+						It("should not return pending request", func() {
+							Expect(reqResult).To(BeNil())
 						})
 					})
 
 					Context("when record the request with the new method", func() {
 						BeforeEach(func() {
 							req = createRequest("PUT")
-							reqId, err = subjectNew.RecordRequest(req, 102)
+							reqResult, err = subjectNew.RecordRequest(req, 102)
 						})
 
 						It("should not error occurred", func() {
 							Expect(err).ToNot(HaveOccurred())
 						})
 
-						It("should return next request id for second request", func() {
-							Expect(reqId).To(Equal(int64(2)))
+						It("should return the pending request", func() {
+							Expect(reqResult).ToNot(BeNil())
 						})
 
-						Describe("record the response with ", func() {
+						Describe("record the response", func() {
 							BeforeEach(func() {
-								respId, err = subjectNew.RecordResponse(resp, 102)
+								respResult, err = subjectNew.RecordResponse(resp, 102)
 							})
 
 							It("should not error occurred", func() {
 								Expect(err).ToNot(HaveOccurred())
 							})
 
-							It("should return next response id for second response", func() {
-								Expect(reqId).To(Equal(int64(2)))
+							It("should return the same result", func() {
+								Expect(reqResult).To(Equal(respResult))
 							})
 						})
 					})
@@ -258,7 +246,7 @@ var _ = Describe("Recorder", func() {
 				BeforeEach(func() {
 					subject.SetFocusedMode(true)
 
-					reqId, _ = subject.RecordRequest(req, session)
+					reqResult, _ = subject.RecordRequest(req, session)
 					subject.RecordResponse(resp, session)
 				})
 
@@ -269,7 +257,7 @@ var _ = Describe("Recorder", func() {
 					scanner.Scan()
 					line := scanner.Text()
 
-					expected := fmt.Sprintf("F,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqId)
+					expected := fmt.Sprintf("F,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqResult.Id)
 					Expect(expected).To(Equal(line))
 				})
 			})

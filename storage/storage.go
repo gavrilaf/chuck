@@ -4,23 +4,40 @@ import (
 	"fmt"
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
+	"io"
 	"net/http"
+	"time"
 )
 
 var (
 	ErrScenarioNotFound = fmt.Errorf("Scenario not found")
+	ErrRequestNotFound  = fmt.Errorf("Request not found")
 )
 
 /*
  *
  */
+type PendingRequest struct {
+	Id      int64
+	Method  string
+	Url     string
+	Started time.Time
+}
+
+type Tracker interface {
+	RecordRequest(req *http.Request, session int64) (*PendingRequest, error)
+	RecordResponse(resp *http.Response, session int64) (*PendingRequest, error)
+	PendingCount() int
+}
+
+/*
+ *
+ */
 type Recorder interface {
+	Tracker
+	io.Closer
 	Name() string
 	SetFocusedMode(focused bool)
-	RecordRequest(req *http.Request, session int64) (int64, error)
-	RecordResponse(resp *http.Response, session int64) (int64, error)
-	PendingCount() int
-	Close()
 }
 
 func NewRecorder(folder string, createNewFolder bool, newOnly bool, log utils.Logger) (Recorder, error) {
@@ -32,10 +49,10 @@ func NewRecorder(folder string, createNewFolder bool, newOnly bool, log utils.Lo
  *
  */
 type ScenarioRecorder interface {
+	Tracker
+	io.Closer
 	Name() string
 	ActivateScenario(name string) error
-	RecordRequest(req *http.Request, session int64) (int64, error)
-	RecordResponse(resp *http.Response, session int64) (int64, error)
 }
 
 func NewScenarioRecorder(folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {

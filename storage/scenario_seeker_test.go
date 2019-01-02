@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-var _ = Describe("Scenario", func() {
+var _ = Describe("ScenarioSeeker", func() {
 	var (
 		log  Logger
 		root *afero.Afero

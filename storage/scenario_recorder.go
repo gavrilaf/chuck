@@ -54,8 +54,16 @@ func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool,
 	}, nil
 }
 
+func (p *scRecorderImpl) Close() error {
+	return nil
+}
+
 func (p *scRecorderImpl) Name() string {
 	return p.name
+}
+
+func (self *scRecorderImpl) PendingCount() int {
+	return 0
 }
 
 func (p *scRecorderImpl) ActivateScenario(name string) error {
@@ -72,16 +80,18 @@ func (p *scRecorderImpl) ActivateScenario(name string) error {
 	return nil
 }
 
-func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (int64, error) {
+func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
 	if p.recorder == nil {
-		return 0, ErrScenarioNotFound
+		return nil, ErrScenarioNotFound
 	}
+
 	return p.recorder.RecordRequest(req, session)
 }
 
-func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (int64, error) {
+func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
 	if p.recorder == nil {
-		return 0, ErrScenarioNotFound
+		return nil, ErrScenarioNotFound
 	}
+
 	return p.recorder.RecordResponse(resp, session)
 }
