@@ -18,7 +18,6 @@ import (
 var _ = Describe("ScenarioSeeker", func() {
 	var (
 		log      Logger
-		root     *afero.Afero
 		scSeeker ScenarioSeeker
 
 		createRequest  func(method string, url string) *http.Request
@@ -46,21 +45,20 @@ var _ = Describe("ScenarioSeeker", func() {
 		}
 
 		fs := afero.NewMemMapFs()
-		root = &afero.Afero{Fs: fs}
 
-		recorder1, _ := NewRecorderWithFs(fs, "test/scenario-1", false, false, log)
+		recorder1, _ := NewRecorder(fs, log, "test/scenario-1", false, false)
 		recorder1.SetFocusedMode(true)
 
 		recorder1.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder1.RecordResponse(createResponse(), 1)
 
-		recorder2, _ := NewRecorderWithFs(fs, "test/scenario-2", false, false, log)
+		recorder2, _ := NewRecorder(fs, log, "test/scenario-2", false, false)
 		recorder2.SetFocusedMode(true)
 
 		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users"), 1)
 		recorder2.RecordResponse(createResponse(), 1)
 
-		scSeeker, _ = NewScenarioSeekerWithFs(root, "test", log)
+		scSeeker, _ = NewScenarioSeeker(fs, log, "test")
 	})
 
 	Describe("Open scenario proxy handler", func() {

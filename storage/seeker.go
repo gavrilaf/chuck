@@ -17,7 +17,7 @@ type seekerImpl struct {
 	index Index
 }
 
-func NewSeekerWithFs(fs afero.Fs, folder string) (Seeker, error) {
+func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
 	if !logDirExists {

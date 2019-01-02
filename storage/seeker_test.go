@@ -47,7 +47,7 @@ var _ = Describe("Seeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder, _ = NewRecorderWithFs(fs, "test", false, false, log)
+		recorder, _ = NewRecorder(fs, log, "test", false, false)
 
 		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder.RecordResponse(createResponse(), 1)
@@ -66,7 +66,7 @@ var _ = Describe("Seeker", func() {
 		)
 
 		BeforeEach(func() {
-			subject, err = NewSeekerWithFs(root, path)
+			subject, err = NewSeeker(root, path)
 		})
 
 		It("should not error occurred", func() {

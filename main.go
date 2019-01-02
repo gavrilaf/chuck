@@ -4,6 +4,7 @@ import (
 	. "github.com/gavrilaf/chuck/cmds"
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/mitchellh/cli"
+	"github.com/spf13/afero"
 	"os"
 )
 
@@ -20,7 +21,9 @@ func main() {
 			ErrorWriter: os.Stderr,
 		},
 	}
+
 	log := utils.NewLogger(ui)
+	fs := afero.NewOsFs()
 
 	c := cli.NewCLI(AppName, Version)
 	c.Args = os.Args[1:]
@@ -28,21 +31,25 @@ func main() {
 		"rec": func() (cli.Command, error) {
 			return &RecordCommand{
 				Log: log,
+				Fs:  fs,
 			}, nil
 		},
 		"dbg": func() (cli.Command, error) {
 			return &DebugCommand{
 				Log: log,
+				Fs:  fs,
 			}, nil
 		},
 		"intg": func() (cli.Command, error) {
 			return &IntgTestCommand{
 				Log: log,
+				Fs:  fs,
 			}, nil
 		},
 		"intg_rec": func() (cli.Command, error) {
 			return &IntgTestRecCommand{
 				Log: log,
+				Fs:  fs,
 			}, nil
 		},
 	}

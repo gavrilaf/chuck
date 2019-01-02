@@ -24,7 +24,7 @@ type recorderImpl struct {
 	log       utils.Logger
 }
 
-func NewRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, onlyNew bool, log utils.Logger) (Recorder, error) {
+func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool) (Recorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {

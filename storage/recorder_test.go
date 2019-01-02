@@ -55,7 +55,7 @@ var _ = Describe("Recorder", func() {
 
 		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
-				subject, err = NewRecorderWithFs(root.Fs, "log-1", true, false, log)
+				subject, err = NewRecorder(root.Fs, log, "log-1", true, false)
 
 				path := "log-1/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
@@ -81,7 +81,7 @@ var _ = Describe("Recorder", func() {
 
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
-				subject, err = NewRecorderWithFs(root.Fs, "log-2", false, false, log)
+				subject, err = NewRecorder(root.Fs, log, "log-2", false, false)
 				indexExists, _ = root.Exists("log-2/index.txt")
 			})
 
@@ -109,7 +109,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewRecorderWithFs(root.Fs, "log-3", true, false, log)
+			subject, _ = NewRecorder(root.Fs, log, "log-3", true, false)
 			basePath = "log-3/" + subject.Name()
 			session = 10
 			req = createRequest("POST")
@@ -186,7 +186,7 @@ var _ = Describe("Recorder", func() {
 					)
 
 					BeforeEach(func() {
-						subjectNew, err = NewRecorderWithFs(root.Fs, basePath, false, true, log)
+						subjectNew, err = NewRecorder(root.Fs, log, basePath, false, true)
 					})
 
 					It("should not error occurred", func() {
@@ -269,7 +269,7 @@ var _ = Describe("Recorder", func() {
 			)
 
 			BeforeEach(func() {
-				subject, err = NewRecorderWithFs(root.Fs, "log-4", true, true, log)
+				subject, err = NewRecorder(root.Fs, log, "log-4", true, true)
 				basePath = "log-4/" + subject.Name()
 
 				req := createRequest("POST")

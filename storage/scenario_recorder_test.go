@@ -48,7 +48,7 @@ var _ = Describe("ScenarioRecorder", func() {
 
 		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
-				subject, err = NewScenarioRecorderWithFs(root, folder, false, log)
+				subject, err = NewScenarioRecorder(root, log, folder, false)
 				dirExists, _ = root.DirExists(folder)
 
 				path := folder + "/" + subject.Name()
@@ -70,7 +70,7 @@ var _ = Describe("ScenarioRecorder", func() {
 
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
-				subject, err = NewScenarioRecorderWithFs(root, folder, false, log)
+				subject, err = NewScenarioRecorder(root, log, folder, false)
 				dirExists, _ = root.DirExists(folder)
 			})
 

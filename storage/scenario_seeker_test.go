@@ -41,13 +41,13 @@ var _ = Describe("ScenarioSeeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder1, _ := NewRecorderWithFs(fs, "test/scenario-1", false, false, log)
+		recorder1, _ := NewRecorder(fs, log, "test/scenario-1", false, false)
 		recorder1.SetFocusedMode(true)
 
 		recorder1.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
 		recorder1.RecordResponse(createResponse(), 1)
 
-		recorder2, _ := NewRecorderWithFs(fs, "test/scenario-2", false, false, log)
+		recorder2, _ := NewRecorder(fs, log, "test/scenario-2", false, false)
 		recorder2.SetFocusedMode(true)
 
 		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users/113/on"), 1)
@@ -61,7 +61,7 @@ var _ = Describe("ScenarioSeeker", func() {
 		)
 
 		BeforeEach(func() {
-			subject, err = NewScenarioSeekerWithFs(root, "test", log)
+			subject, err = NewScenarioSeeker(root, log, "test")
 		})
 
 		It("should not error occurred", func() {

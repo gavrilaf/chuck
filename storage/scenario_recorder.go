@@ -17,7 +17,7 @@ type scRecorderImpl struct {
 	log      utils.Logger
 }
 
-func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
+func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool) (ScenarioRecorder, error) {
 	// TODO: move to the shared code
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
@@ -67,7 +67,7 @@ func (self *scRecorderImpl) PendingCount() int {
 }
 
 func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorderWithFs(p.root, name, false, true, p.log)
+	recorder, err := NewRecorder(p.root, p.log, name, false, true)
 	if err != nil {
 		return err
 	}
