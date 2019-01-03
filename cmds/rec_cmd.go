@@ -25,15 +25,21 @@ func (self *RecordCommand) Run(args []string) int {
 
 	proxy, err := CreateProxy()
 	if err != nil {
-		self.Log.Panic("Couldn't create a proxy, %v", err)
+		self.Log.Error("Couldn't create a proxy, %v", err)
+		return 1
 	}
 
-	handler := NewRecorderHandler(cfg, self.Fs, self.Log)
+	handler, err := NewRecorderHandler(cfg, self.Fs, self.Log)
+	if err != nil {
+		self.Log.Error("Couldn't create a handler, %v", err)
+		return 1
+	}
 
 	self.Log.Info("Running proxy...")
 	err = RunProxy(proxy, handler, cfg.AddressAndPort())
 	if err != nil {
-		self.Log.Panic("Couldn't run a proxy, %v", err)
+		self.Log.Error("Couldn't run a proxy, %v", err)
+		return 1
 	}
 
 	return 0

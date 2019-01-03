@@ -16,7 +16,6 @@ type RecorderConfig struct {
 	CreateNewFolder bool
 	Prevent304      bool
 	LogAsFocused    bool
-	PrintOnly       bool
 }
 
 type SeekerConfig struct {
@@ -61,7 +60,7 @@ func NewRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder string)
 }
 
 func (cfg *RecorderConfig) String() string {
-	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogAsFocused=%t\nPrintOnly=%t", cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogAsFocused, cfg.PrintOnly)
+	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogAsFocused=%t", cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogAsFocused)
 }
 
 func (cfg *RecorderConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
@@ -70,7 +69,6 @@ func (cfg *RecorderConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) 
 	flags.BoolVar(&cfg.CreateNewFolder, "new_folder", true, "Create new folder inside root for log")
 	flags.BoolVar(&cfg.Prevent304, "prevent_304", true, "Prevent 304 http answer")
 	flags.BoolVar(&cfg.LogAsFocused, "focused", false, "Log all requests as focused")
-	flags.BoolVar(&cfg.PrintOnly, "print_only", false, "Only print requests, no logs")
 }
 
 // SeekerConfig

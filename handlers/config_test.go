@@ -38,7 +38,6 @@ var _ = Describe("Config", func() {
 					CreateNewFolder: true,
 					Prevent304:      true,
 					LogAsFocused:    false,
-					PrintOnly:       false,
 				}
 			})
 
@@ -49,7 +48,7 @@ var _ = Describe("Config", func() {
 
 		Context("when args list contains all args", func() {
 			BeforeEach(func() {
-				args := []string{"-address=www.google.com", "-port=9999", "-folder=log-99", "-focused", "-prevent_304=0", "--print_only=false", "-new_folder=0"}
+				args := []string{"-address=www.google.com", "-port=9999", "-folder=log-99", "-focused", "-prevent_304=0", "-new_folder=0"}
 				subject = NewRecorderConfig(flags, args, "rec")
 
 				expected = &RecorderConfig{
@@ -61,7 +60,6 @@ var _ = Describe("Config", func() {
 					CreateNewFolder: false,
 					Prevent304:      false,
 					LogAsFocused:    true,
-					PrintOnly:       false,
 				}
 			})
 
