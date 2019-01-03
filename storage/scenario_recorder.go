@@ -17,7 +17,7 @@ type scRecorderImpl struct {
 	log      utils.Logger
 }
 
-func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (ScenarioRecorder, error) {
+func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool) (ScenarioRecorder, error) {
 	// TODO: move to the shared code
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
@@ -54,12 +54,20 @@ func NewScenarioRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool,
 	}, nil
 }
 
+func (p *scRecorderImpl) Close() error {
+	return nil
+}
+
 func (p *scRecorderImpl) Name() string {
 	return p.name
 }
 
+func (self *scRecorderImpl) PendingCount() int {
+	return 0
+}
+
 func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorderWithFs(p.root, name, false, p.log)
+	recorder, err := NewRecorder(p.root, p.log, name, false, true)
 	if err != nil {
 		return err
 	}
@@ -72,16 +80,18 @@ func (p *scRecorderImpl) ActivateScenario(name string) error {
 	return nil
 }
 
-func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (int64, error) {
+func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
 	if p.recorder == nil {
-		return 0, ErrScenarioNotFound
+		return nil, ErrScenarioNotFound
 	}
+
 	return p.recorder.RecordRequest(req, session)
 }
 
-func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (int64, error) {
+func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
 	if p.recorder == nil {
-		return 0, ErrScenarioNotFound
+		return nil, ErrScenarioNotFound
 	}
+
 	return p.recorder.RecordResponse(resp, session)
 }

@@ -17,7 +17,7 @@ type seekerImpl struct {
 	index Index
 }
 
-func NewSeekerWithFs(fs afero.Fs, folder string) (Seeker, error) {
+func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
 	if !logDirExists {
@@ -26,7 +26,7 @@ func NewSeekerWithFs(fs afero.Fs, folder string) (Seeker, error) {
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
-	index, err := LoadIndex(root, "index.txt", true)
+	index, err := LoadIndex2(root, "index.txt", true)
 	if err != nil {
 		return nil, err
 	}
@@ -55,16 +55,7 @@ func (seeker *seekerImpl) Look(method string, url string) (*http.Response, error
 		return nil, fmt.Errorf("Read header body for %s: %v", item.Folder, err)
 	}
 
-	response := &http.Response{
-		StatusCode: item.Code,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-		Header:     header,
-		Body:       body,
-	}
-
-	return response, nil
+	return utils.MakeResponse(item.Code, header, body, 0), nil
 }
 
 /*

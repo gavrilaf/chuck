@@ -15,15 +15,6 @@ type scenarioRecordHandler struct {
 	preventCaching bool
 }
 
-func NewScenarioHandlerWithRecorder(recorder storage.ScenarioRecorder, log utils.Logger) ProxyHandler {
-	return &scenarioRecordHandler{
-		recorder:       recorder,
-		log:            log,
-		scenarios:      make(map[string]string),
-		preventCaching: true,
-	}
-}
-
 func (p *scenarioRecordHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	_, err := p.recorder.RecordRequest(req, ctx.Session)
 	if err != nil {

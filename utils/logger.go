@@ -37,7 +37,7 @@ func (log *loggerImpl) Request(id int64, method string, url string, statusCode i
 
 func (log *loggerImpl) FocusedReq(method string, url string, statusCode int) {
 	s := fmt.Sprintf("<-- %s : %s, %d", method, url, statusCode)
-	log.printForStatusCode(s, statusCode)
+	log.ui.Output(s)
 }
 
 func (log *loggerImpl) Info(format string, args ...interface{}) {

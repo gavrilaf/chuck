@@ -14,14 +14,6 @@ type scenarioSeekerHandler struct {
 	scenarios map[string]string
 }
 
-func NewScenarioHandlerWithSeeker(seeker storage.ScenarioSeeker, log utils.Logger) ProxyHandler {
-	return &scenarioSeekerHandler{
-		seeker:    seeker,
-		log:       log,
-		scenarios: make(map[string]string),
-	}
-}
-
 func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	method := req.Method
 	url := req.URL.String()
@@ -45,7 +37,7 @@ func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx
 	} else {
 		p.log.Error("Integration test header not found for %s : %s", method, url)
 	}
-	return nil
+	return utils.MakeResponse(404, make(http.Header), nil, 0)
 }
 
 func (p *scenarioSeekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {

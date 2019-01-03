@@ -13,7 +13,7 @@ type scSeekerImpl struct {
 	seekers map[string]Seeker
 }
 
-func NewScenarioSeekerWithFs(fs afero.Fs, folder string, log utils.Logger) (ScenarioSeeker, error) {
+func NewScenarioSeeker(fs afero.Fs, log utils.Logger, folder string) (ScenarioSeeker, error) {
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
 	content, err := root.ReadDir("")
@@ -25,7 +25,7 @@ func NewScenarioSeekerWithFs(fs afero.Fs, folder string, log utils.Logger) (Scen
 	for _, f := range content {
 		if f.IsDir() {
 			name := f.Name()
-			seeker, err := NewSeekerWithFs(root, name)
+			seeker, err := NewSeeker(root, name)
 			if err != nil {
 				log.Error("Couldn't create Seeker on %s: %v", name, err)
 			} else {

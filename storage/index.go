@@ -27,20 +27,13 @@ func NewIndex() Index {
 	}
 }
 
-func LoadIndex(fs afero.Fs, file string, focused bool) (Index, error) {
-	fp, err := fs.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer fp.Close()
-
+func LoadIndex(fp afero.File, focused bool) (Index, error) {
 	index := NewIndex()
 
 	scanner := bufio.NewScanner(fp)
 	lineIndex := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		//fmt.Printf("\n****%s\n\n", line)
 		item := ParseIndexItem(line)
 		if item == nil {
 			return nil, fmt.Errorf("Couldn't parse line %d", lineIndex)
@@ -52,6 +45,16 @@ func LoadIndex(fs afero.Fs, file string, focused bool) (Index, error) {
 	}
 
 	return index, nil
+}
+
+func LoadIndex2(fs afero.Fs, file string, focused bool) (Index, error) {
+	fp, err := fs.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer fp.Close()
+
+	return LoadIndex(fp, focused)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

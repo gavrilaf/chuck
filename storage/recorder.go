@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -12,25 +13,18 @@ import (
 	"github.com/spf13/afero"
 )
 
-type pendingRequest struct {
-	id      int64
-	method  string
-	url     string
-	started time.Time
-}
-
 type recorderImpl struct {
 	name      string
 	focused   bool
 	root      *afero.Afero
 	indexFile afero.File
-	counter   int64
-	pending   map[int64]pendingRequest
+	index     Index
+	tracker   Tracker
 	mux       *sync.Mutex
 	log       utils.Logger
 }
 
-func NewRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log utils.Logger) (Recorder, error) {
+func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool) (Recorder, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, err := afero.DirExists(fs, folder)
 	if err != nil {
@@ -58,107 +52,122 @@ func NewRecorderWithFs(fs afero.Fs, folder string, createNewFolder bool, log uti
 	}
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
-	file, err := root.Create("index.txt")
+	indexFp, err := root.OpenFile("index.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
 		return nil, err
+	}
+
+	counter := 1
+	var index Index
+	if onlyNew {
+		//content, err := root.ReadFile("index.txt")
+		//fmt.Printf("\n***Err: %v, Index: \n%s\n\n", err, string(content))
+		index, err = LoadIndex2(root, "index.txt", false)
+		if err != nil {
+			return nil, err
+		}
+
+		counter = index.Size() + 1
+		//fmt.Printf("\n*** Loading index with %d records\n\n", index.Size())
 	}
 
 	return &recorderImpl{
 		name:      name,
 		root:      root,
-		indexFile: file,
-		counter:   1,
-		pending:   make(map[int64]pendingRequest, 10),
+		indexFile: indexFp,
+		index:     index,
+		tracker:   NewTracker(int64(counter), log),
 		mux:       &sync.Mutex{},
 		log:       log,
 	}, nil
 }
 
-func (recorder *recorderImpl) Name() string {
-	return recorder.name
+func (self *recorderImpl) Name() string {
+	return self.name
 }
 
-func (recorder *recorderImpl) SetFocusedMode(focused bool) {
-	recorder.focused = focused
+func (self *recorderImpl) SetFocusedMode(focused bool) {
+	self.focused = focused
 }
 
-func (recorder *recorderImpl) Close() {
-	recorder.indexFile.Close()
+func (self *recorderImpl) Close() error {
+	return self.indexFile.Close()
 }
 
-func (recorder *recorderImpl) PendingCount() int {
-	recorder.mux.Lock()
-	defer recorder.mux.Unlock()
+func (self *recorderImpl) PendingCount() int {
+	self.mux.Lock()
+	defer self.mux.Unlock()
 
-	return len(recorder.pending)
+	return self.tracker.PendingCount()
 }
 
-func (recorder *recorderImpl) RecordRequest(req *http.Request, session int64) (int64, error) {
-	recorder.mux.Lock()
-	defer recorder.mux.Unlock()
+func (self *recorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
+	method := req.Method
+	url := req.URL.String()
 
-	id := recorder.counter
-	folder := "r_" + strconv.FormatInt(id, 10)
+	if self.index != nil {
+		if self.index.Find(method, url, SEARCH_SUBSTR) != nil {
+			return nil, nil
+		} else {
+			self.index.Add(IndexItem{
+				Focused: false,
+				Method:  method,
+				Url:     url,
+				Code:    0,
+				Folder:  "",
+			})
+		}
+	}
 
-	err := recorder.root.Mkdir(folder, 0777)
+	pendingReq, _ := self.tracker.RecordRequest(req, session)
+	folder := "r_" + strconv.FormatInt(pendingReq.Id, 10)
+
+	err := self.root.Mkdir(folder, 0777)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	recorder.pending[session] = pendingRequest{
-		id:      id,
-		method:  req.Method,
-		url:     req.URL.String(),
-		started: time.Now(),
-	}
-
-	recorder.counter += 1
-
-	err = recorder.writeHeader(folder+"/req_header.json", req.Header)
+	err = self.writeHeader(folder+"/req_header.json", req.Header)
 	if err != nil {
-		recorder.log.Error("Couldn't write request header: %v", err)
+		self.log.Error("Couldn't write request header: %v", err)
 	}
 
-	recorder.writeRequesteBody(folder+"/req_body.json", req)
+	self.writeRequesteBody(folder+"/req_body.json", req)
 	if err != nil {
-		recorder.log.Error("Couldn't write request body: %v", err)
+		self.log.Error("Couldn't write request body: %v", err)
 	}
 
-	return id, nil
+	return pendingReq, nil
 }
 
-func (recorder *recorderImpl) RecordResponse(resp *http.Response, session int64) (int64, error) {
-	recorder.mux.Lock()
-	defer recorder.mux.Unlock()
-
-	req, ok := recorder.pending[session]
-	if !ok {
-		recorder.log.Panic("Could not find request for session: %d", session)
-	}
-
-	delete(recorder.pending, session)
-
-	elapsed := time.Since(req.started)
-	recorder.log.Request(req.id, req.method, req.url, resp.StatusCode, elapsed)
-
-	folder := "r_" + strconv.FormatInt(req.id, 10)
-	line := FormatIndexItem(req.method, req.url, resp.StatusCode, folder, recorder.focused)
-	_, err := recorder.indexFile.WriteString(line + "\n")
+func (self *recorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
+	pendingReq, err := self.tracker.RecordResponse(resp, session)
 	if err != nil {
-		return 0, err
+		if self.index != nil {
+			return nil, nil
+		} else {
+			self.log.Panic("Could not find request for session: %d, %v", session, err)
+		}
 	}
 
-	err = recorder.writeHeader(folder+"/resp_header.json", resp.Header)
+	folder := "r_" + strconv.FormatInt(pendingReq.Id, 10)
+	line := FormatIndexItem(pendingReq.Method, pendingReq.Url, resp.StatusCode, folder, self.focused)
+	_, err = self.indexFile.WriteString(line + "\n")
 	if err != nil {
-		recorder.log.Error("Couldn't write response header: %v", err)
+		return nil, err
 	}
 
-	err = recorder.writeResponseBody(folder+"/resp_body.json", resp)
+	err = self.writeHeader(folder+"/resp_header.json", resp.Header)
 	if err != nil {
-		recorder.log.Error("Couldn't write response body: %v", err)
+		self.log.Error("Couldn't write response header: %v", err)
 	}
 
-	return req.id, nil
+	err = self.writeResponseBody(folder+"/resp_body.json", resp)
+	if err != nil {
+		self.log.Error("Couldn't write response body: %v", err)
+	}
+
+	return pendingReq, nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

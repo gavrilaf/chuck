@@ -6,12 +6,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"bytes"
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
-	"io/ioutil"
 	"net/http"
-	//"os"
 )
 
 var _ = Describe("ScenarioRecorder", func() {
@@ -26,28 +23,17 @@ var _ = Describe("ScenarioRecorder", func() {
 	)
 
 	BeforeEach(func() {
-		/*log = NewLogger(&cli.BasicUi{
-			Writer:      os.Stdout,
-			ErrorWriter: os.Stderr,
-		})*/
 		log = NewLogger(&cli.MockUi{})
 
+		header := make(http.Header)
+
 		createRequest = func() *http.Request {
-			req, _ := http.NewRequest("POST", "https://secure.api.com?query=123", ioutil.NopCloser(bytes.NewBufferString("")))
+			req, _ := MakeRequest2("POST", "https://secure.api.com?query=123", header, "")
 			return req
 		}
 
 		createResponse = func() *http.Response {
-			str := "{}"
-
-			resp := &http.Response{
-				StatusCode:    200,
-				Header:        make(http.Header),
-				Body:          ioutil.NopCloser(bytes.NewBufferString(str)),
-				ContentLength: int64(len(str)),
-			}
-			resp.Header.Set("Content-Type", "application/json")
-			return resp
+			return MakeResponse2(200, header, "{}")
 		}
 
 		folder = "sc-folder"
@@ -62,18 +48,18 @@ var _ = Describe("ScenarioRecorder", func() {
 
 		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
-				subject, err = NewScenarioRecorderWithFs(root, folder, false, log)
+				subject, err = NewScenarioRecorder(root, log, folder, false)
 				dirExists, _ = root.DirExists(folder)
 
 				path := folder + "/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
 			})
 
-			It("should return nil error", func() {
-				Expect(err).To(BeNil())
+			It("should not error occurred", func() {
+				Expect(err).ToNot(HaveOccurred())
 			})
 
-			It("should return ScRecorder object", func() {
+			It("should return scenario recorder object", func() {
 				Expect(subject).ToNot(BeNil())
 			})
 
@@ -84,12 +70,12 @@ var _ = Describe("ScenarioRecorder", func() {
 
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
-				subject, err = NewScenarioRecorderWithFs(root, folder, false, log)
+				subject, err = NewScenarioRecorder(root, log, folder, false)
 				dirExists, _ = root.DirExists(folder)
 			})
 
-			It("should return nil error", func() {
-				Expect(err).To(BeNil())
+			It("should not error occurred", func() {
+				Expect(err).ToNot(HaveOccurred())
 			})
 
 			It("should return empty Name", func() {
@@ -119,12 +105,12 @@ var _ = Describe("ScenarioRecorder", func() {
 						_, respErr = subject.RecordResponse(createResponse(), 1)
 					})
 
-					It("should return nil error for request recording", func() {
-						Expect(reqErr).To(BeNil())
+					It("should not request recording error occurred", func() {
+						Expect(reqErr).ToNot(HaveOccurred())
 					})
 
-					It("should return nil error for response recording", func() {
-						Expect(respErr).To(BeNil())
+					It("should not response recording error occurred", func() {
+						Expect(respErr).ToNot(HaveOccurred())
 					})
 				})
 			})
