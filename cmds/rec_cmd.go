@@ -46,7 +46,7 @@ func (self *RecordCommand) Run(args []string) int {
 }
 
 func (self *RecordCommand) Help() string {
-	helpText := "Usage: chuck rec [-address=addr] [-port=port] [-folder=folder] [-new_folder] [-prevent_304] [-focused] [-print_only]"
+	helpText := "Usage: chuck rec [-address=addr] [-port=port] [-folder=folder] [-new_folder] [-prevent_304] [-focused]"
 	return strings.TrimSpace(helpText)
 }
 

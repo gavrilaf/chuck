@@ -45,7 +45,7 @@ func (self *IntgTestCommand) Run(args []string) int {
 }
 
 func (self *IntgTestCommand) Help() string {
-	helpText := "Usage: chuck intg [addr:port] [folder]"
+	helpText := "Usage: chuck intg [-address=addr] [-port=port] [-folder=folder]"
 	return strings.TrimSpace(helpText)
 }
 
