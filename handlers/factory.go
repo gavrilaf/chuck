@@ -4,6 +4,7 @@ import (
 	"github.com/gavrilaf/chuck/storage"
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
+	"sync"
 )
 
 // Recorder
@@ -30,8 +31,10 @@ func NewSeekerHandler(config *SeekerConfig, fs afero.Fs, log utils.Logger) (Prox
 	}
 
 	return &seekerHandler{
-		seeker: seeker,
-		log:    log,
+		seeker:  seeker,
+		tracker: storage.NewTracker(0, log),
+		mux:     &sync.Mutex{},
+		log:     log,
 	}, nil
 }
 

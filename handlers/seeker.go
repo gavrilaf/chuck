@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gavrilaf/chuck/storage"
 	"github.com/gavrilaf/chuck/utils"
@@ -9,24 +10,34 @@ import (
 )
 
 type seekerHandler struct {
-	seeker storage.Seeker
-	log    utils.Logger
+	seeker  storage.Seeker
+	tracker storage.Tracker
+	mux     *sync.Mutex
+	log     utils.Logger
 }
 
-func (p *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
+func (self *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	method, url := req.Method, req.URL.String()
-	resp, err := p.seeker.Look(method, url)
+
+	resp, err := self.seeker.Look(method, url)
 	if err != nil {
-		p.log.Error("Searching request error, %s : %s, (%v)", method, url, err)
-	}
-	if resp != nil {
-		p.log.FocusedReq(req.Method, req.URL.String(), resp.StatusCode)
+		self.log.Error("Searching request error, %s : %s, (%v)", method, url, err)
+	} else {
+		if resp != nil {
+			self.log.FocusedReq(req.Method, req.URL.String(), resp.StatusCode)
+		} else {
+			self.mux.Lock()
+			defer self.mux.Unlock()
+			self.tracker.RecordRequest(req, ctx.Session)
+		}
 	}
 	return resp
 }
 
-func (p *seekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
-
+func (self *seekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
+	self.mux.Lock()
+	defer self.mux.Unlock()
+	self.tracker.RecordResponse(resp, ctx.Session)
 }
 
 func (p *seekerHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {

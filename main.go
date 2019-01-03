@@ -13,9 +13,10 @@ const Version = "0.0.1"
 
 func main() {
 	ui := &cli.ColoredUi{
-		InfoColor:  cli.UiColorGreen,
-		WarnColor:  cli.UiColorYellow,
-		ErrorColor: cli.UiColorRed,
+		InfoColor:   cli.UiColorGreen,
+		WarnColor:   cli.UiColorYellow,
+		ErrorColor:  cli.UiColorRed,
+		OutputColor: cli.UiColorMagenta,
 		Ui: &cli.BasicUi{
 			Writer:      os.Stdout,
 			ErrorWriter: os.Stderr,

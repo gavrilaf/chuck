@@ -9,6 +9,7 @@ import (
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
+	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
 )
 
@@ -17,10 +18,11 @@ var _ = Describe("Seeker handler", func() {
 		log Logger
 		fs  afero.Fs
 
-		header http.Header
-		req    *http.Request
-		resp   *http.Response
-		err    error
+		header  http.Header
+		req     *http.Request
+		resp    *http.Response
+		err     error
+		context *goproxy.ProxyCtx
 
 		subject ProxyHandler
 	)
@@ -28,6 +30,8 @@ var _ = Describe("Seeker handler", func() {
 	BeforeEach(func() {
 		log = NewLogger(cli.NewMockUi())
 		fs = afero.NewMemMapFs()
+
+		context = &goproxy.ProxyCtx{Session: 100}
 	})
 
 	Describe("open seeker handler on the folder with index", func() {
@@ -63,7 +67,7 @@ var _ = Describe("Seeker handler", func() {
 
 		Context("when handle focused request", func() {
 			BeforeEach(func() {
-				resp = subject.Request(req, nil)
+				resp = subject.Request(req, nil) // pass context as nil because we don't use it if we found response for request
 			})
 
 			It("should return valid response", func() {
@@ -76,7 +80,7 @@ var _ = Describe("Seeker handler", func() {
 		Context("when handle new request", func() {
 			BeforeEach(func() {
 				reqNew, _ := MakeRequest2("GET", "www.unknown-host.net", header, "")
-				resp = subject.Request(reqNew, nil)
+				resp = subject.Request(reqNew, context)
 			})
 
 			It("should return nil", func() {
