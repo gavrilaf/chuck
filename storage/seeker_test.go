@@ -13,60 +13,70 @@ import (
 
 var _ = Describe("Seeker", func() {
 	var (
-		log      Logger
-		recorder Recorder
-		root     *afero.Afero
-		path     string
-		subject  Seeker
+		log Logger
+		fs  afero.Fs
 
-		header   http.Header
-		respBody string
-
-		createRequest  func(method string, url string) *http.Request
-		createResponse func() *http.Response
+		err     error
+		subject Seeker
 	)
 
 	BeforeEach(func() {
 		log = NewLogger(cli.NewMockUi())
-
-		header = make(http.Header)
-		header.Set("Content-Type", "application/json")
-		header.Set("Access-Token", "Bearer-12234")
-
-		respBody = `{"colors": []}`
-
-		createRequest = func(method string, url string) *http.Request {
-			req, _ := MakeRequest2(method, url, header, "{}")
-			return req
-		}
-
-		createResponse = func() *http.Response {
-			return MakeResponse2(200, header, respBody)
-		}
-
-		fs := afero.NewMemMapFs()
-		root = &afero.Afero{Fs: fs}
-
-		recorder, _ = NewRecorder(fs, log, "test", false, false)
-
-		recorder.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
-		recorder.RecordResponse(createResponse(), 1)
-
-		recorder.SetFocusedMode(true)
-
-		recorder.RecordRequest(createRequest("GET", "https://secure.api.com/users/678/off"), 2)
-		recorder.RecordResponse(createResponse(), 2)
-
-		path = "test"
+		fs = afero.NewMemMapFs()
 	})
 
-	Describe("Open Seeker", func() {
+	Context("Open Seeker on nonexisting folder", func() {
+		BeforeEach(func() {
+			subject, err = NewSeeker(fs, "test-123")
+		})
+
+		It("should error occurred", func() {
+			Expect(err).To(MatchError("Folder test-123 doesn't exists"))
+		})
+
+		It("should return nil Seeker", func() {
+			Expect(subject).To(BeNil())
+		})
+
+	})
+
+	Context("Open Seeker on folder with index", func() {
 		var (
-			err error
+			header   http.Header
+			respBody string
 		)
 
 		BeforeEach(func() {
-			subject, err = NewSeeker(root, path)
+			header = make(http.Header)
+			header.Set("Content-Type", "application/json")
+			header.Set("Access-Token", "Bearer-12234")
+
+			respBody = `{"colors": []}`
+
+			req1, _ := MakeRequest("POST", "https://secure.api.com/login", header, nil)
+			req2, _ := MakeRequest("GET", "https://secure.api.com/users/678/off", header, nil)
+
+			emptyHeader := make(http.Header)
+			reqEmpty, _ := MakeRequest("GET", "www.google.com", emptyHeader, nil)
+			respEmpty := MakeResponse(200, emptyHeader, nil, 0)
+
+			resp := MakeResponse2(200, header, respBody)
+
+			recorder, _ := NewRecorder(fs, log, "test", false, false)
+
+			recorder.RecordRequest(req1, 1)
+			recorder.RecordResponse(resp, 1)
+
+			recorder.SetFocusedMode(true)
+
+			recorder.RecordRequest(req2, 2)
+			recorder.RecordResponse(resp, 2)
+
+			// empty header/body
+			recorder.RecordRequest(reqEmpty, 3)
+			recorder.RecordResponse(respEmpty, 3)
+
+			subject, err = NewSeeker(fs, "test")
 		})
 
 		It("should not error occurred", func() {
@@ -75,6 +85,10 @@ var _ = Describe("Seeker", func() {
 
 		It("should create Seeker", func() {
 			Expect(subject).ToNot(BeNil())
+		})
+
+		It("should contains two items", func() {
+			Expect(subject.Count()).To(Equal(2))
 		})
 
 		Describe("looking for request", func() {
@@ -98,6 +112,25 @@ var _ = Describe("Seeker", func() {
 				It("should response has correct body", func() {
 					buf, _ := DumpRespBody(resp)
 					Expect(string(buf)).To(Equal(respBody))
+				})
+			})
+
+			Context("when request/response has empty header & body", func() {
+				BeforeEach(func() {
+					resp, _ = subject.Look("GET", "www.google.com")
+				})
+
+				It("should return request", func() {
+					Expect(resp).ToNot(BeNil())
+				})
+
+				It("should response has empty header", func() {
+					Expect(len(resp.Header)).To(BeZero())
+				})
+
+				It("should response has empty body", func() {
+					buf, _ := DumpRespBody(resp)
+					Expect(len(buf)).To(BeZero())
 				})
 			})
 

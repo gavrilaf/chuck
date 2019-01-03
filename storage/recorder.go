@@ -194,6 +194,10 @@ func (recorder *recorderImpl) writeHeader(fname string, header http.Header) erro
 func (recorder *recorderImpl) writeResponseBody(fname string, resp *http.Response) error {
 	b, err := utils.DumpRespBody(resp)
 	if err != nil {
+		return err
+	}
+
+	if len(b) == 0 {
 		return nil
 	}
 
@@ -210,6 +214,10 @@ func (recorder *recorderImpl) writeResponseBody(fname string, resp *http.Respons
 func (recorder *recorderImpl) writeRequesteBody(fname string, req *http.Request) error {
 	b, err := utils.DumpReqBody(req)
 	if err != nil {
+		return err
+	}
+
+	if len(b) == 0 {
 		return nil
 	}
 

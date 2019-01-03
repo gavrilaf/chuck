@@ -134,7 +134,7 @@ var _ = Describe("Recorder", func() {
 				Expect(reqResult).ToNot(BeNil())
 			})
 
-			It("should create request dump folder", func() {
+			It("should create dump folder", func() {
 				dirExists, _ := root.DirExists(dumpPath)
 				Expect(dirExists).To(BeTrue())
 			})
@@ -259,6 +259,55 @@ var _ = Describe("Recorder", func() {
 
 					expected := fmt.Sprintf("F,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqResult.Id)
 					Expect(expected).To(Equal(line))
+				})
+			})
+
+			Describe("Record request/response with empty header & body", func() {
+				BeforeEach(func() {
+					header := make(http.Header)
+					req, _ := MakeRequest("GET", "www.google.com", header, nil)
+					resp := MakeResponse(200, header, nil, 0)
+
+					reqResult, _ = subject.RecordRequest(req, session)
+					subject.RecordResponse(resp, session)
+
+					dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqResult.Id)
+				})
+
+				It("should record request as usual", func() {
+					fi, _ := root.Open(basePath + "/" + "index.txt")
+					defer fi.Close()
+					scanner := bufio.NewScanner(fi)
+					scanner.Scan()
+					line := scanner.Text()
+
+					expected := fmt.Sprintf("N,\t200,\tr_%d,\tGET,\twww.google.com", reqResult.Id)
+					Expect(expected).To(Equal(line))
+				})
+
+				It("should create dump folder", func() {
+					dirExists, _ := root.DirExists(dumpPath)
+					Expect(dirExists).To(BeTrue())
+				})
+
+				It("should not create request headers dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "req_header.json")
+					Expect(dumpExists).ToNot(BeTrue())
+				})
+
+				It("should not create request body dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "req_body.json")
+					Expect(dumpExists).ToNot(BeTrue())
+				})
+
+				It("should not create response headers dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "resp_header.json")
+					Expect(dumpExists).ToNot(BeTrue())
+				})
+
+				It("should not create response body dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "resp_body.json")
+					Expect(dumpExists).ToNot(BeTrue())
 				})
 			})
 		})

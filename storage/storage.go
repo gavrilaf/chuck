@@ -53,6 +53,7 @@ type ScenarioRecorder interface {
  */
 type Seeker interface {
 	Look(method string, url string) (*http.Response, error)
+	Count() int
 }
 
 /*
