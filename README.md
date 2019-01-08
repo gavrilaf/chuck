@@ -38,13 +38,14 @@ https://some-endpoint-4
 
 Chuck creates following log.
 
+```
 root
   |----sc-12
   |       |-----index.txt (some-endpoint-1, some-endpoint-2)
   |
   |----sc-674
   |       |-----index.txt (some-endpoint-1, some-endpoint-4)
-  
+  ```
   All requests are logged as focused.
 
 
