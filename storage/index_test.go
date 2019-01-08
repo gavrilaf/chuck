@@ -59,7 +59,7 @@ var _ = Describe("Index", func() {
 				fs := afero.NewMemMapFs()
 				root = &afero.Afero{Fs: fs}
 
-				fp, _ := root.Create("index.txt")
+				fp, _ := root.Create(IndexFileName)
 				fp.WriteString(item1.Format() + "\n")
 				fp.WriteString(item2.Format() + "\n")
 				fp.Close()
@@ -67,7 +67,7 @@ var _ = Describe("Index", func() {
 
 			Context("when focused is false", func() {
 				BeforeEach(func() {
-					subject, err = LoadIndex2(root, "index.txt", false)
+					subject, err = LoadIndex2(root, IndexFileName, false)
 				})
 
 				It("should return nil error", func() {
@@ -86,7 +86,7 @@ var _ = Describe("Index", func() {
 
 			Context("when focused is true", func() {
 				BeforeEach(func() {
-					subject, err = LoadIndex2(root, "index.txt", true)
+					subject, err = LoadIndex2(root, IndexFileName, true)
 				})
 
 				It("should contain 1 item", func() {

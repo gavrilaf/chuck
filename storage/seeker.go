@@ -26,7 +26,7 @@ func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
-	index, err := LoadIndex2(root, "index.txt", true)
+	index, err := LoadIndex2(root, IndexFileName, true)
 	if err != nil {
 		return nil, err
 	}
@@ -39,18 +39,22 @@ func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 	return seeker, nil
 }
 
-func (seeker *seekerImpl) Look(method string, url string) (*http.Response, error) {
-	item := seeker.index.Find(method, url, SEARCH_SUBSTR)
+func (self *seekerImpl) Count() int {
+	return self.index.Size()
+}
+
+func (self *seekerImpl) Look(method string, url string) (*http.Response, error) {
+	item := self.index.Find(method, url, SEARCH_SUBSTR)
 	if item == nil {
 		return nil, nil
 	}
 
-	header, err := seeker.readHeader(item.Folder + "/resp_header.json")
+	header, err := self.readHeader(item.Folder + "/resp_header.json")
 	if err != nil {
 		return nil, fmt.Errorf("Read header error for %s: %v", item.Folder, err)
 	}
 
-	body, err := seeker.readBody(item.Folder + "/resp_body.json")
+	body, err := self.readBody(item.Folder + "/resp_body.json")
 	if err != nil {
 		return nil, fmt.Errorf("Read header body for %s: %v", item.Folder, err)
 	}
@@ -62,8 +66,8 @@ func (seeker *seekerImpl) Look(method string, url string) (*http.Response, error
  * Private
  */
 
-func (seeker *seekerImpl) readHeader(fname string) (http.Header, error) {
-	exists, err := seeker.root.Exists(fname)
+func (self *seekerImpl) readHeader(fname string) (http.Header, error) {
+	exists, err := self.root.Exists(fname)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +76,7 @@ func (seeker *seekerImpl) readHeader(fname string) (http.Header, error) {
 		return make(http.Header), nil
 	}
 
-	fp, err := seeker.root.Open(fname)
+	fp, err := self.root.Open(fname)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +91,8 @@ func (seeker *seekerImpl) readHeader(fname string) (http.Header, error) {
 	return header, err
 }
 
-func (seeker *seekerImpl) readBody(fname string) (io.ReadCloser, error) {
-	exists, err := seeker.root.Exists(fname)
+func (self *seekerImpl) readBody(fname string) (io.ReadCloser, error) {
+	exists, err := self.root.Exists(fname)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +101,7 @@ func (seeker *seekerImpl) readBody(fname string) (io.ReadCloser, error) {
 		return ioutil.NopCloser(strings.NewReader("")), nil
 	}
 
-	fp, err := seeker.root.Open(fname)
+	fp, err := self.root.Open(fname)
 	if err != nil {
 		return nil, err
 	}

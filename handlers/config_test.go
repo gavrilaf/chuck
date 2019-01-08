@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"flag"
+	"io/ioutil"
 )
 
 func defaultBase(folder string) BaseConfig {
@@ -17,17 +18,20 @@ func defaultBase(folder string) BaseConfig {
 }
 
 var _ = Describe("Config", func() {
+	var (
+		flags *flag.FlagSet
+	)
+
+	BeforeEach(func() {
+		flags = flag.NewFlagSet("test", flag.ContinueOnError)
+		flags.SetOutput(ioutil.Discard)
+	})
 
 	Describe("Recorder", func() {
 		var (
 			subject  *RecorderConfig
-			flags    *flag.FlagSet
 			expected *RecorderConfig
 		)
-
-		BeforeEach(func() {
-			flags = flag.NewFlagSet("test", flag.ContinueOnError)
-		})
 
 		Context("when args list is empty", func() {
 			BeforeEach(func() {
@@ -83,13 +87,8 @@ var _ = Describe("Config", func() {
 	Describe("ScenarioRecorder", func() {
 		var (
 			subject  *ScenarioRecorderConfig
-			flags    *flag.FlagSet
 			expected *ScenarioRecorderConfig
 		)
-
-		BeforeEach(func() {
-			flags = flag.NewFlagSet("test", flag.ContinueOnError)
-		})
 
 		Context("when args list is empty", func() {
 			BeforeEach(func() {
@@ -143,13 +142,8 @@ var _ = Describe("Config", func() {
 	Describe("Seeker", func() {
 		var (
 			subject  *SeekerConfig
-			flags    *flag.FlagSet
 			expected *SeekerConfig
 		)
-
-		BeforeEach(func() {
-			flags = flag.NewFlagSet("test", flag.ContinueOnError)
-		})
 
 		Context("when args list is empty", func() {
 			BeforeEach(func() {
@@ -199,13 +193,8 @@ var _ = Describe("Config", func() {
 	Describe("ScenarioSeeker", func() {
 		var (
 			subject  *ScenarioSeekerConfig
-			flags    *flag.FlagSet
 			expected *ScenarioSeekerConfig
 		)
-
-		BeforeEach(func() {
-			flags = flag.NewFlagSet("test", flag.ContinueOnError)
-		})
 
 		Context("when args list is empty", func() {
 			BeforeEach(func() {

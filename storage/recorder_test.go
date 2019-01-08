@@ -59,7 +59,7 @@ var _ = Describe("Recorder", func() {
 
 				path := "log-1/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
-				indexExists, _ = root.Exists(path + "/index.txt")
+				indexExists, _ = root.Exists(path + "/" + IndexFileName)
 			})
 
 			It("should not error occurred", func() {
@@ -82,7 +82,7 @@ var _ = Describe("Recorder", func() {
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
 				subject, err = NewRecorder(root.Fs, log, "log-2", false, false)
-				indexExists, _ = root.Exists("log-2/index.txt")
+				indexExists, _ = root.Exists("log-2/" + IndexFileName)
 			})
 
 			It("should not error occurred", func() {
@@ -134,7 +134,7 @@ var _ = Describe("Recorder", func() {
 				Expect(reqResult).ToNot(BeNil())
 			})
 
-			It("should create request dump folder", func() {
+			It("should create dump folder", func() {
 				dirExists, _ := root.DirExists(dumpPath)
 				Expect(dirExists).To(BeTrue())
 			})
@@ -158,8 +158,8 @@ var _ = Describe("Recorder", func() {
 					Expect(err).ToNot(HaveOccurred())
 				})
 
-				It("should index.txt contains log record", func() {
-					fi, _ := root.Open(basePath + "/" + "index.txt")
+				It("should index contains log record", func() {
+					fi, _ := root.Open(basePath + "/" + IndexFileName)
 					defer fi.Close()
 
 					scanner := bufio.NewScanner(fi)
@@ -251,7 +251,7 @@ var _ = Describe("Recorder", func() {
 				})
 
 				It("should record request as focused", func() {
-					fi, _ := root.Open(basePath + "/" + "index.txt")
+					fi, _ := root.Open(basePath + "/" + IndexFileName)
 					defer fi.Close()
 					scanner := bufio.NewScanner(fi)
 					scanner.Scan()
@@ -259,6 +259,55 @@ var _ = Describe("Recorder", func() {
 
 					expected := fmt.Sprintf("F,\t200,\tr_%d,\tPOST,\thttps://secure.api.com?query=123", reqResult.Id)
 					Expect(expected).To(Equal(line))
+				})
+			})
+
+			Describe("Record request/response with empty header & body", func() {
+				BeforeEach(func() {
+					header := make(http.Header)
+					req, _ := MakeRequest("GET", "www.google.com", header, nil)
+					resp := MakeResponse(200, header, nil, 0)
+
+					reqResult, _ = subject.RecordRequest(req, session)
+					subject.RecordResponse(resp, session)
+
+					dumpPath = fmt.Sprintf("%s/r_%d/", basePath, reqResult.Id)
+				})
+
+				It("should record request as usual", func() {
+					fi, _ := root.Open(basePath + "/" + IndexFileName)
+					defer fi.Close()
+					scanner := bufio.NewScanner(fi)
+					scanner.Scan()
+					line := scanner.Text()
+
+					expected := fmt.Sprintf("N,\t200,\tr_%d,\tGET,\twww.google.com", reqResult.Id)
+					Expect(expected).To(Equal(line))
+				})
+
+				It("should create dump folder", func() {
+					dirExists, _ := root.DirExists(dumpPath)
+					Expect(dirExists).To(BeTrue())
+				})
+
+				It("should not create request headers dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "req_header.json")
+					Expect(dumpExists).ToNot(BeTrue())
+				})
+
+				It("should not create request body dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "req_body.json")
+					Expect(dumpExists).ToNot(BeTrue())
+				})
+
+				It("should not create response headers dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "resp_header.json")
+					Expect(dumpExists).ToNot(BeTrue())
+				})
+
+				It("should not create response body dump", func() {
+					dumpExists, _ := root.Exists(dumpPath + "resp_body.json")
+					Expect(dumpExists).ToNot(BeTrue())
 				})
 			})
 		})
@@ -288,7 +337,7 @@ var _ = Describe("Recorder", func() {
 			})
 
 			It("should not record second response", func() {
-				fi, _ := root.Open(basePath + "/" + "index.txt")
+				fi, _ := root.Open(basePath + "/" + IndexFileName)
 				defer fi.Close()
 
 				scanner := bufio.NewScanner(fi)

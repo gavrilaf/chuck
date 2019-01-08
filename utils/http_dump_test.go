@@ -1,10 +1,9 @@
 package utils_test
 
 import (
+	. "github.com/gavrilaf/chuck/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	. "github.com/gavrilaf/chuck/utils"
 
 	"bytes"
 	"io/ioutil"

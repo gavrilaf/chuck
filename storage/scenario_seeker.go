@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 	"net/http"
+	"os"
+	. "path"
 
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
@@ -15,37 +17,52 @@ type scSeekerImpl struct {
 
 func NewScenarioSeeker(fs afero.Fs, log utils.Logger, folder string) (ScenarioSeeker, error) {
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
+	seekers := make(map[string]Seeker)
 
-	content, err := root.ReadDir("")
+	walkFn := func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Error("Couldn't access a path: %s, %v", path, err)
+			return err
+		}
+
+		if !info.IsDir() && info.Name() == IndexFileName {
+			folder, _ := Split(path)
+			scenarioName := Base(folder)
+			seeker, err := NewSeeker(root, folder)
+			if err != nil {
+				log.Error("Couldn't load index by path %s, %v", path, err)
+			} else {
+				log.Info("Loaded scenarion %s", folder)
+			}
+
+			seekers[scenarioName] = seeker
+		}
+
+		return nil
+	}
+
+	err := root.Walk("", walkFn)
 	if err != nil {
 		return nil, err
 	}
 
-	seekers := make(map[string]Seeker)
-	for _, f := range content {
-		if f.IsDir() {
-			name := f.Name()
-			seeker, err := NewSeeker(root, name)
-			if err != nil {
-				log.Error("Couldn't create Seeker on %s: %v", name, err)
-			} else {
-				seekers[name] = seeker
-			}
-		}
-	}
 	return &scSeekerImpl{
 		root:    root,
 		seekers: seekers,
 	}, nil
 }
 
-func (p *scSeekerImpl) IsScenarioExists(name string) bool {
-	_, ok := p.seekers[name]
+func (self *scSeekerImpl) ScenariosCount() int {
+	return len(self.seekers)
+}
+
+func (self *scSeekerImpl) IsScenarioExists(name string) bool {
+	_, ok := self.seekers[name]
 	return ok
 }
 
-func (p *scSeekerImpl) Look(scenario string, method string, url string) (*http.Response, error) {
-	seeker, ok := p.seekers[scenario]
+func (self *scSeekerImpl) Look(scenario string, method string, url string) (*http.Response, error) {
+	seeker, ok := self.seekers[scenario]
 	if ok {
 		return seeker.Look(method, url)
 	}

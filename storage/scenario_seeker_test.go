@@ -15,9 +15,6 @@ var _ = Describe("ScenarioSeeker", func() {
 	var (
 		log  Logger
 		root *afero.Afero
-
-		createRequest  func(method string, url string) *http.Request
-		createResponse func() *http.Response
 	)
 
 	BeforeEach(func() {
@@ -29,29 +26,31 @@ var _ = Describe("ScenarioSeeker", func() {
 
 		body := "{}"
 
-		createRequest = func(method string, url string) *http.Request {
-			req, _ := MakeRequest2(method, url, header, body)
-			return req
-		}
+		req1, _ := MakeRequest("POST", "https://secure.api.com/login", header, nil)
+		req2, _ := MakeRequest("GET", "https://secure.api.com/users/113/on", header, nil)
 
-		createResponse = func() *http.Response {
-			return MakeResponse2(200, header, body)
-		}
+		resp := MakeResponse2(200, header, body)
 
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder1, _ := NewRecorder(fs, log, "test/scenario-1", false, false)
+		recorder1, _ := NewRecorder(fs, log, "test/folder1/scenario-1", false, false)
 		recorder1.SetFocusedMode(true)
 
-		recorder1.RecordRequest(createRequest("POST", "https://secure.api.com/login"), 1)
-		recorder1.RecordResponse(createResponse(), 1)
+		recorder1.RecordRequest(req1, 1)
+		recorder1.RecordResponse(resp, 1)
 
-		recorder2, _ := NewRecorder(fs, log, "test/scenario-2", false, false)
+		recorder2, _ := NewRecorder(fs, log, "test/folder2/scenario-2", false, false)
 		recorder2.SetFocusedMode(true)
 
-		recorder2.RecordRequest(createRequest("GET", "https://secure.api.com/users/113/on"), 1)
-		recorder2.RecordResponse(createResponse(), 1)
+		recorder2.RecordRequest(req2, 1)
+		recorder2.RecordResponse(resp, 1)
+
+		recorder3, _ := NewRecorder(fs, log, "test/folder2/scenario-3", false, false)
+		recorder3.SetFocusedMode(true)
+
+		recorder3.RecordRequest(req1, 1)
+		recorder3.RecordResponse(resp, 1)
 	})
 
 	Describe("Open Scenario", func() {
@@ -70,6 +69,10 @@ var _ = Describe("ScenarioSeeker", func() {
 
 		It("should create scenario seeker", func() {
 			Expect(subject).ToNot(BeNil())
+		})
+
+		It("should contain three scenarios", func() {
+			Expect(subject.ScenariosCount()).To(Equal(3))
 		})
 
 		Describe("checking if scenario exists", func() {
@@ -116,7 +119,6 @@ var _ = Describe("ScenarioSeeker", func() {
 			})
 
 			Context("when request from unknown scenarion", func() {
-
 				BeforeEach(func() {
 					resp, err = subject.Look("scenarion-6666", "GET", "https://secure.api.com/users")
 				})
