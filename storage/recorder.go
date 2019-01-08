@@ -52,7 +52,7 @@ func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder b
 	}
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
-	indexFp, err := root.OpenFile("index.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
+	indexFp, err := root.OpenFile(IndexFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -60,15 +60,12 @@ func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder b
 	counter := 1
 	var index Index
 	if onlyNew {
-		//content, err := root.ReadFile("index.txt")
-		//fmt.Printf("\n***Err: %v, Index: \n%s\n\n", err, string(content))
-		index, err = LoadIndex2(root, "index.txt", false)
+		index, err = LoadIndex2(root, IndexFileName, false)
 		if err != nil {
 			return nil, err
 		}
 
 		counter = index.Size() + 1
-		//fmt.Printf("\n*** Loading index with %d records\n\n", index.Size())
 	}
 
 	return &recorderImpl{

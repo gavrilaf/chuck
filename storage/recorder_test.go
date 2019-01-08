@@ -59,7 +59,7 @@ var _ = Describe("Recorder", func() {
 
 				path := "log-1/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
-				indexExists, _ = root.Exists(path + "/index.txt")
+				indexExists, _ = root.Exists(path + "/" + IndexFileName)
 			})
 
 			It("should not error occurred", func() {
@@ -82,7 +82,7 @@ var _ = Describe("Recorder", func() {
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
 				subject, err = NewRecorder(root.Fs, log, "log-2", false, false)
-				indexExists, _ = root.Exists("log-2/index.txt")
+				indexExists, _ = root.Exists("log-2/" + IndexFileName)
 			})
 
 			It("should not error occurred", func() {
@@ -158,8 +158,8 @@ var _ = Describe("Recorder", func() {
 					Expect(err).ToNot(HaveOccurred())
 				})
 
-				It("should index.txt contains log record", func() {
-					fi, _ := root.Open(basePath + "/" + "index.txt")
+				It("should index contains log record", func() {
+					fi, _ := root.Open(basePath + "/" + IndexFileName)
 					defer fi.Close()
 
 					scanner := bufio.NewScanner(fi)
@@ -251,7 +251,7 @@ var _ = Describe("Recorder", func() {
 				})
 
 				It("should record request as focused", func() {
-					fi, _ := root.Open(basePath + "/" + "index.txt")
+					fi, _ := root.Open(basePath + "/" + IndexFileName)
 					defer fi.Close()
 					scanner := bufio.NewScanner(fi)
 					scanner.Scan()
@@ -275,7 +275,7 @@ var _ = Describe("Recorder", func() {
 				})
 
 				It("should record request as usual", func() {
-					fi, _ := root.Open(basePath + "/" + "index.txt")
+					fi, _ := root.Open(basePath + "/" + IndexFileName)
 					defer fi.Close()
 					scanner := bufio.NewScanner(fi)
 					scanner.Scan()
@@ -337,7 +337,7 @@ var _ = Describe("Recorder", func() {
 			})
 
 			It("should not record second response", func() {
-				fi, _ := root.Open(basePath + "/" + "index.txt")
+				fi, _ := root.Open(basePath + "/" + IndexFileName)
 				defer fi.Close()
 
 				scanner := bufio.NewScanner(fi)

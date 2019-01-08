@@ -26,7 +26,7 @@ func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
-	index, err := LoadIndex2(root, "index.txt", true)
+	index, err := LoadIndex2(root, IndexFileName, true)
 	if err != nil {
 		return nil, err
 	}

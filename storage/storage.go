@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const (
+	IndexFileName = "index.txt"
+)
+
 var (
 	ErrScenarioNotFound = fmt.Errorf("Scenario not found")
 	ErrRequestNotFound  = fmt.Errorf("Request not found")
@@ -60,6 +64,7 @@ type Seeker interface {
  *
  */
 type ScenarioSeeker interface {
+	ScenariosCount() int
 	IsScenarioExists(name string) bool
 	Look(scenario string, method string, url string) (*http.Response, error)
 }
