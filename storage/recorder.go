@@ -1,13 +1,11 @@
 package storage
 
 import (
-	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
@@ -25,30 +23,9 @@ type recorderImpl struct {
 }
 
 func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool) (Recorder, error) {
-	folder = strings.Trim(folder, " \\/")
-	logDirExists, err := afero.DirExists(fs, folder)
+	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
 		return nil, err
-	}
-
-	if !logDirExists {
-		err := fs.Mkdir(folder, 0777)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	name := ""
-	path := folder
-	if createNewFolder {
-		tm := time.Now()
-		name = fmt.Sprintf("%d_%d_%d_%d_%d_%d", tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second())
-		path = folder + "/" + name
-
-		err = fs.Mkdir(path, 0777)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
@@ -99,37 +76,24 @@ func (self *recorderImpl) PendingCount() int {
 }
 
 func (self *recorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
-	method := req.Method
-	url := req.URL.String()
-
-	if self.index != nil {
-		if self.index.Find(method, url, SEARCH_SUBSTR) != nil {
-			return nil, nil
-		} else {
-			self.index.Add(IndexItem{
-				Focused: false,
-				Method:  method,
-				Url:     url,
-				Code:    0,
-				Folder:  "",
-			})
-		}
+	pendingReq, err := self.checkAndRecordRequest(req, session)
+	if pendingReq == nil {
+		return nil, err
 	}
 
-	pendingReq, _ := self.tracker.RecordRequest(req, session)
 	folder := "r_" + strconv.FormatInt(pendingReq.Id, 10)
 
-	err := self.root.Mkdir(folder, 0777)
+	err = self.root.Mkdir(folder, 0777)
 	if err != nil {
 		return nil, err
 	}
 
-	err = self.writeHeader(folder+"/req_header.json", req.Header)
+	err = self.writeHeader(path.Join(folder, "req_header.json"), req.Header)
 	if err != nil {
 		self.log.Error("Couldn't write request header: %v", err)
 	}
 
-	self.writeRequesteBody(folder+"/req_body.json", req)
+	self.writeRequesteBody(path.Join(folder, "req_body.json"), req)
 	if err != nil {
 		self.log.Error("Couldn't write request body: %v", err)
 	}
@@ -138,7 +102,10 @@ func (self *recorderImpl) RecordRequest(req *http.Request, session int64) (*Pend
 }
 
 func (self *recorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
+	self.mux.Lock()
 	pendingReq, err := self.tracker.RecordResponse(resp, session)
+	self.mux.Unlock()
+
 	if err != nil {
 		if self.index != nil {
 			return nil, nil
@@ -154,12 +121,12 @@ func (self *recorderImpl) RecordResponse(resp *http.Response, session int64) (*P
 		return nil, err
 	}
 
-	err = self.writeHeader(folder+"/resp_header.json", resp.Header)
+	err = self.writeHeader(path.Join(folder, "resp_header.json"), resp.Header)
 	if err != nil {
 		self.log.Error("Couldn't write response header: %v", err)
 	}
 
-	err = self.writeResponseBody(folder+"/resp_body.json", resp)
+	err = self.writeResponseBody(path.Join(folder, "resp_body.json"), resp)
 	if err != nil {
 		self.log.Error("Couldn't write response body: %v", err)
 	}
@@ -169,6 +136,30 @@ func (self *recorderImpl) RecordResponse(resp *http.Response, session int64) (*P
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Private
+
+func (self *recorderImpl) checkAndRecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
+	method := req.Method
+	url := req.URL.String()
+
+	self.mux.Lock()
+	defer self.mux.Unlock()
+
+	if self.index != nil {
+		if self.index.Find(method, url, SEARCH_SUBSTR) != nil {
+			return nil, nil
+		} else {
+			self.index.Add(IndexItem{
+				Focused: false,
+				Method:  method,
+				Url:     url,
+				Code:    0,
+				Folder:  "",
+			})
+		}
+	}
+
+	return self.tracker.RecordRequest(req, session)
+}
 
 func (recorder *recorderImpl) writeHeader(fname string, header http.Header) error {
 	if len(header) > 0 {

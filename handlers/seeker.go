@@ -27,8 +27,8 @@ func (self *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *ht
 			self.log.FocusedReq(req.Method, req.URL.String(), resp.StatusCode)
 		} else {
 			self.mux.Lock()
-			defer self.mux.Unlock()
 			self.tracker.RecordRequest(req, ctx.Session)
+			self.mux.Unlock()
 		}
 	}
 	return resp
@@ -36,8 +36,8 @@ func (self *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *ht
 
 func (self *seekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
 	self.mux.Lock()
-	defer self.mux.Unlock()
 	self.tracker.RecordResponse(resp, ctx.Session)
+	self.mux.Unlock()
 }
 
 func (p *seekerHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {

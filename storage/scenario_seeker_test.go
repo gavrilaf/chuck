@@ -9,7 +9,6 @@ import (
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
 	"net/http"
-	//"os"
 )
 
 var _ = Describe("ScenarioSeeker", func() {
@@ -20,10 +19,6 @@ var _ = Describe("ScenarioSeeker", func() {
 
 	BeforeEach(func() {
 		log = NewLogger(&cli.MockUi{})
-		//log = NewLogger(&cli.BasicUi{
-		//	Writer:      os.Stdout,
-		//	ErrorWriter: os.Stderr,
-		//})
 
 		header := make(http.Header)
 		header.Set("Content-Type", "application/json")

@@ -1,10 +1,7 @@
 package storage
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
-	"time"
 
 	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
@@ -18,35 +15,12 @@ type scRecorderImpl struct {
 }
 
 func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool) (ScenarioRecorder, error) {
-	// TODO: move to the shared code
-	folder = strings.Trim(folder, " \\/")
-	logDirExists, err := afero.DirExists(fs, folder)
+	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
 		return nil, err
 	}
 
-	if !logDirExists {
-		err := fs.Mkdir(folder, 0777)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	name := ""
-	path := folder
-	if createNewFolder {
-		tm := time.Now()
-		name = fmt.Sprintf("%d_%d_%d_%d_%d_%d", tm.Year(), tm.Month(), tm.Day(), tm.Hour(), tm.Minute(), tm.Second())
-		path = folder + "/" + name
-
-		err = fs.Mkdir(path, 0777)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
-
 	return &scRecorderImpl{
 		root: root,
 		name: name,
