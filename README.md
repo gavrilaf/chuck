@@ -4,7 +4,7 @@ The proxy server for mobile application debugging, mocking nonexisting API, reco
 
 ## How to use
 
-Before run you have install certificate from the project folder as root certificate (or generate and install new one).
+Before run you have to install certificate from the project folder as root certificate (or generate and install new one).
 
 **Chuck** supports 4 modes:
 
