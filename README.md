@@ -2,7 +2,11 @@
 
 The proxy server for mobile application debugging, mocking nonexisting API, record and run integration tests.
 
-Support 4 modes:
+## How to use
+
+Before run you have to install certificate from the project folder as root certificate (or generate and install new one).
+
+**Chuck** supports 4 modes:
 
 ### Record mode
 
@@ -11,11 +15,11 @@ In this mode, the application is working as a transparent proxy but all traffic 
 
 ### Debug mode
 
-Just copy logs recorded in the rec mode to another folder. Make some requests focused (changed 'N' on 'F' in the index.txtx file), edit according responses and run **Chuck** in the debug mode.
+Just copy logs recorded in the rec mode to another folder. Make some requests **focused** (changed 'N' on 'F' in the index.txtx file), edit according responses and run **Chuck** in the debug mode.
 
 *chuck dbg [-address=addr] [-port=port] [-folder=folder]*
 
-Chuck runs as a transparent proxy but for the focused requests will be returned stored values. Also, you are able to add new requests to the index.txt. It's a very simple way how to stub unexisting REST API.
+**Chuck** runs as a transparent proxy but for the focused requests will be returned stored values. Also, you are able to add new requests to the index.txt. It's a very simple way how to stub unexisting REST API.
 
 ### Integration tests recording mode
 
@@ -23,7 +27,7 @@ Almost the same with recording mode but with scenarios support.
 
 *chuck intg_rec [-address=addr] [-port=port] [-folder=folder] [-new_folder] [-prevent_304]*
 
-The tested application should call endpoint https://chuck-url/scenario/scenario_id/app_id/no before any scenario execution. All following requests will be stored to the folder 'scenario_id'. app_id isn't used right now.
+The tested application should call endpoint *https://chuck-url/scenario/scenario_id/app_id/no* before any scenario execution. All following requests will be stored to the folder 'scenario_id'. app_id isn't used right now.
 
 Example
 The application generates requests.
@@ -52,3 +56,9 @@ root
 ### Integration tests playing mode
 
 *chuck intg_rec [-address=addr] [-port=port] [-folder=folder]*
+
+After recording scenarios using recording mode **Chuck** is able to play it. The tested application should call endpoint *https://chuck-url/scenario/scenario_id/app_id/no* before any scenario execution. Each request should contains *'int-test-identifier = app_id'* in the http header. **Chuck** uses this header to determine which scenario is active for this application.
+
+## Developing
+
+I hope **Chuck** is a good example how to write well-formed Golang code and how to use BDD with Golang.
