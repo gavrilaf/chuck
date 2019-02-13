@@ -3,13 +3,13 @@ package storage
 import (
 	"bytes"
 	"fmt"
+	"github.com/spf13/afero"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/gavrilaf/chuck/utils"
-	"github.com/spf13/afero"
+	"chuck/utils"
 )
 
 type seekerImpl struct {

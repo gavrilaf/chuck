@@ -1,7 +1,7 @@
 package storage_test
 
 import (
-	. "github.com/gavrilaf/chuck/storage"
+	. "chuck/storage"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 

@@ -1,8 +1,9 @@
 package main
 
 import (
-	. "github.com/gavrilaf/chuck/cmds"
-	"github.com/gavrilaf/chuck/utils"
+	. "chuck/cmds"
+	"chuck/utils"
+
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
 	"os"

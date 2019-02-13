@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
 	"sync"
 
-	"github.com/gavrilaf/chuck/storage"
-	"github.com/gavrilaf/chuck/utils"
-	"gopkg.in/elazarl/goproxy.v1"
+	"chuck/storage"
+	"chuck/utils"
 )
 
 type seekerHandler struct {

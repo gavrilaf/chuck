@@ -1,9 +1,10 @@
 package storage
 
 import (
-	"github.com/gavrilaf/chuck/utils"
 	"net/http"
 	"time"
+
+	"chuck/utils"
 )
 
 type trackerImpl struct {

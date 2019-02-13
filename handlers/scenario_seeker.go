@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
 
-	"github.com/gavrilaf/chuck/storage"
-	"github.com/gavrilaf/chuck/utils"
-	"gopkg.in/elazarl/goproxy.v1"
+	"chuck/storage"
+	"chuck/utils"
 )
 
 type scenarioSeekerHandler struct {

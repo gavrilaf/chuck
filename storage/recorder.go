@@ -1,14 +1,14 @@
 package storage
 
 import (
+	"github.com/spf13/afero"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"sync"
 
-	"github.com/gavrilaf/chuck/utils"
-	"github.com/spf13/afero"
+	"chuck/utils"
 )
 
 type recorderImpl struct {
