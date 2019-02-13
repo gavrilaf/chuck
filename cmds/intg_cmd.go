@@ -1,9 +1,9 @@
 package cmds
 
 import (
+	. "chuck/handlers"
+	"chuck/utils"
 	"flag"
-	. "github.com/gavrilaf/chuck/handlers"
-	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
 	"strings"
 )

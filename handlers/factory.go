@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/gavrilaf/chuck/storage"
-	"github.com/gavrilaf/chuck/utils"
 	"github.com/spf13/afero"
 	"sync"
+
+	"chuck/storage"
+	"chuck/utils"
 )
 
 // Recorder

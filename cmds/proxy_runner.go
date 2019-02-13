@@ -1,8 +1,8 @@
 package cmds
 
 import (
+	. "chuck/handlers"
 	"crypto/tls"
-	. "github.com/gavrilaf/chuck/handlers"
 	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
 )

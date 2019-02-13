@@ -1,7 +1,8 @@
 package utils_test
 
 import (
-	. "github.com/gavrilaf/chuck/utils"
+	. "chuck/utils"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 

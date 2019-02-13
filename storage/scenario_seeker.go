@@ -2,12 +2,12 @@ package storage
 
 import (
 	"fmt"
+	"github.com/spf13/afero"
 	"net/http"
 	"os"
 	. "path"
 
-	"github.com/gavrilaf/chuck/utils"
-	"github.com/spf13/afero"
+	"chuck/utils"
 )
 
 type scSeekerImpl struct {

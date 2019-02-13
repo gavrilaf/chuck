@@ -1,7 +1,8 @@
 package handlers_test
 
 import (
-	. "github.com/gavrilaf/chuck/handlers"
+	. "chuck/handlers"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
