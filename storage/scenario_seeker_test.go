@@ -111,7 +111,7 @@ var _ = Describe("ScenarioSeeker", func() {
 
 			Context("when request from scenario 2; looking using prefix", func() {
 				BeforeEach(func() {
-					resp, _ = subject.Look("scenario-2", "GET", "https://secure.api.com/users")
+					resp, _ = subject.Look("scenario-2", "GET", "https://secure.api.com/users/113/on/update")
 				})
 
 				It("should find response", func() {

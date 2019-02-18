@@ -12,8 +12,8 @@ const (
 )
 
 var (
-	ErrScenarioNotFound = fmt.Errorf("Scenario not found")
-	ErrRequestNotFound  = fmt.Errorf("Request not found")
+	ErrScenarioRecorderNotActivated = fmt.Errorf("Scenario recorder not activated")
+	ErrRequestNotFound              = fmt.Errorf("Request not found")
 )
 
 /*

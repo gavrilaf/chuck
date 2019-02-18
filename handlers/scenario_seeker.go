@@ -37,7 +37,7 @@ func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx
 	} else {
 		p.log.Error("Integration test header not found for %s : %s", method, url)
 	}
-	return utils.MakeResponse(404, make(http.Header), nil, 0)
+	return utils.MakeResponse2(404, make(http.Header), "")
 }
 
 func (p *scenarioSeekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {

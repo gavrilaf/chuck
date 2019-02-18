@@ -84,7 +84,7 @@ func (p *indexImpl) Find(method string, url string, searchType SearchType) *Inde
 
 	// should be replaced by more effective implementation
 	for _, node := range p.nodes {
-		if (searchType == SEARCH_EQ && key == node.key) || (searchType == SEARCH_SUBSTR && strings.HasPrefix(node.key, key)) {
+		if (searchType == SEARCH_EQ && key == node.key) || (searchType == SEARCH_SUBSTR && strings.HasPrefix(key, node.key)) {
 			found = node
 			ok = true
 			break

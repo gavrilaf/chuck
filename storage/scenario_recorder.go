@@ -56,7 +56,7 @@ func (p *scRecorderImpl) ActivateScenario(name string) error {
 
 func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
 	if p.recorder == nil {
-		return nil, ErrScenarioNotFound
+		return nil, ErrScenarioRecorderNotActivated
 	}
 
 	return p.recorder.RecordRequest(req, session)
@@ -64,7 +64,7 @@ func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (*Pendi
 
 func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
 	if p.recorder == nil {
-		return nil, ErrScenarioNotFound
+		return nil, ErrScenarioRecorderNotActivated
 	}
 
 	return p.recorder.RecordResponse(resp, session)
