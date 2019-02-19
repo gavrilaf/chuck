@@ -49,6 +49,8 @@ func (p *scRecorderImpl) ActivateScenario(name string) error {
 	if p.recorder != nil {
 		p.recorder.Close()
 	}
+
+	recorder.SetFocusedMode(true)
 	p.recorder = recorder
 
 	return nil
