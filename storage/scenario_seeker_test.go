@@ -28,7 +28,7 @@ var _ = Describe("ScenarioSeeker", func() {
 		body := "{}"
 
 		req1, _ := MakeRequest("POST", "https://secure.api.com/login", header, nil)
-		req2, _ := MakeRequest("GET", "https://secure.api.com/users/113/on", header, nil)
+		req2, _ := MakeRequest("GET", "https://secure.api.com/users/:user_id/on/*", header, nil)
 
 		resp := MakeResponse2(200, header, body)
 

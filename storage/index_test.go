@@ -20,8 +20,8 @@ var _ = Describe("Index", func() {
 	Describe("Create empty index", func() {
 		BeforeEach(func() {
 			item1 = IndexItem{Focused: false, Code: 200, Folder: "r1", Method: "GET", Url: "https://secure.api.com?query=123"}
-			item2 = IndexItem{Focused: true, Code: 400, Folder: "r2", Method: "POST", Url: "https://profile.node.com/user"}
-			item3 = IndexItem{Focused: true, Code: 200, Folder: "r3", Method: "GET", Url: "https://aadhi.cma.r53.nordstrom.net:443/secure.nordstrom.com/v1/authinit?format=json&apikey=GQZExhNLtY7e4kiFCuZAaw72rkSUcFuY&code="}
+			item2 = IndexItem{Focused: true, Code: 400, Folder: "r2", Method: "POST", Url: "https://profile.node.com/user/:user_id"}
+			item3 = IndexItem{Focused: true, Code: 200, Folder: "r3", Method: "GET", Url: "https://test.aaa.r53.amazon.net:443/secure.amazon.com/v1/authinit?format=json&apikey=*&code=*"}
 
 			subject = NewIndex()
 		})
@@ -37,23 +37,19 @@ var _ = Describe("Index", func() {
 				subject.Add(item3)
 			})
 
-			Context("using Equality option", func() {
-				It("should return correct object", func() {
-					p := subject.Find("GET", "https://secure.api.com?query=123", SEARCH_EQ)
-					Expect(p).To(Equal(&item1))
-				})
+			It("should return correct object", func() {
+				p := subject.Find("GET", "https://secure.api.com?query=123")
+				Expect(p).To(Equal(&item1))
 			})
 
-			Context("using SubStr option", func() {
-				It("should return correct object", func() {
-					p := subject.Find("POST", "https://profile.node.com/user/123", SEARCH_SUBSTR)
-					Expect(p).To(Equal(&item2))
-				})
+			It("should return correct object", func() {
+				p := subject.Find("POST", "https://profile.node.com/user/123")
+				Expect(p).To(Equal(&item2))
+			})
 
-				It("should return correct object", func() {
-					p := subject.Find("GET", "https://aadhi.cma.r53.nordstrom.net:443/secure.nordstrom.com/v1/authinit?format=json&apikey=GQZExhNLtY7e4kiFCuZAaw72rkSUcFuY&code=RMJKAZiOIfW8qWbRJlqYL-QoWcF4L8SMFXtlFtkavZU*", SEARCH_SUBSTR)
-					Expect(p).To(Equal(&item3))
-				})
+			It("should return correct object", func() {
+				p := subject.Find("GET", "https://test.aaa.r53.amazon.net:443/secure.amazon.com/v1/authinit?format=json&apikey=GQZExhNLtY7e4kiFCuZAaw72rkSUcFuY&code=RMJKAZiOIfW8qWbRJlqYL-QoWcF4L8SMFXtlFtkavZU*")
+				Expect(p).To(Equal(&item3))
 			})
 		})
 

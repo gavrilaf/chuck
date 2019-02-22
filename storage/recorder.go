@@ -145,9 +145,10 @@ func (self *recorderImpl) checkAndRecordRequest(req *http.Request, session int64
 	defer self.mux.Unlock()
 
 	if self.index != nil {
-		if self.index.Find(method, url, SEARCH_SUBSTR) != nil {
+		if self.index.Find(method, url) != nil {
 			return nil, nil
 		} else {
+			// add error handling
 			self.index.Add(IndexItem{
 				Focused: false,
 				Method:  method,

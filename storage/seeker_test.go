@@ -55,7 +55,7 @@ var _ = Describe("Seeker", func() {
 			respBody = `{"colors": []}`
 
 			req1, _ := MakeRequest("POST", "https://secure.api.com/login", header, nil)
-			req2, _ := MakeRequest("GET", "https://secure.api.com/users", header, nil)
+			req2, _ := MakeRequest("GET", "https://secure.api.com/users/*", header, nil)
 
 			emptyHeader := make(http.Header)
 			reqEmpty, _ := MakeRequest("GET", "www.google.com", emptyHeader, nil)

@@ -3,29 +3,25 @@ package storage
 import (
 	"bufio"
 	"fmt"
+	"github.com/gavrilaf/grouter"
 	"github.com/spf13/afero"
-	"strings"
-)
-
-type SearchType int
-
-const (
-	SEARCH_EQ SearchType = iota + 1
-	SEARCH_SUBSTR
 )
 
 type Index interface {
-	Add(item IndexItem)
-	Find(method string, url string, searchType SearchType) *IndexItem
+	Add(item IndexItem) error
+	Find(method string, url string) *IndexItem
 	Size() int
 	Get(index int) IndexItem
 }
 
 func NewIndex() Index {
 	return &indexImpl{
-		nodes: make([]indexNode, 0),
+		items:  make([]IndexItem, 0),
+		router: grouter.NewRouter(),
 	}
 }
+
+// Index creation
 
 func LoadIndex(fp afero.File, focused bool) (Index, error) {
 	index := NewIndex()
@@ -40,7 +36,10 @@ func LoadIndex(fp afero.File, focused bool) (Index, error) {
 		}
 		lineIndex += 1
 		if !focused || item.Focused {
-			index.Add(*item)
+			err := index.Add(*item)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -57,51 +56,38 @@ func LoadIndex2(fs afero.Fs, file string, focused bool) (Index, error) {
 	return LoadIndex(fp, focused)
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-
-type indexNode struct {
-	key  string
-	item IndexItem
-}
+// indexImpl
 
 type indexImpl struct {
-	nodes []indexNode
+	items  []IndexItem
+	router grouter.Router
 }
 
-func (p *indexImpl) Add(item IndexItem) {
-	key := item.Method + ":" + item.Url
-	p.nodes = append(p.nodes, indexNode{
-		key:  key,
-		item: item,
-	})
+func (self *indexImpl) Add(item IndexItem) error {
+	self.items = append(self.items, item)
+
+	err := self.router.AddRoute(item.Method, item.Url, len(self.items)-1)
+	return err
 }
 
-func (p *indexImpl) Find(method string, url string, searchType SearchType) *IndexItem {
-	var found indexNode
-
-	key := method + ":" + url
-	ok := false
-
-	// should be replaced by more effective implementation
-	for _, node := range p.nodes {
-		if (searchType == SEARCH_EQ && key == node.key) || (searchType == SEARCH_SUBSTR && strings.HasPrefix(key, node.key)) {
-			found = node
-			ok = true
-			break
-		}
-	}
-
-	if !ok {
+func (self *indexImpl) Find(method string, url string) *IndexItem {
+	p, _ := self.router.Lookup(method, url)
+	if p == nil { // TODO: add errors handling
 		return nil
 	}
 
-	return &found.item
+	index := p.Value.(int)
+	if index >= 0 && index < len(self.items) {
+		return &self.items[index]
+	}
+
+	return nil
 }
 
-func (p *indexImpl) Size() int {
-	return len(p.nodes)
+func (self *indexImpl) Size() int {
+	return len(self.items)
 }
 
-func (p *indexImpl) Get(index int) IndexItem {
-	return p.nodes[index].item
+func (self *indexImpl) Get(index int) IndexItem {
+	return self.items[index]
 }

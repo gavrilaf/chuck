@@ -44,7 +44,7 @@ func (self *seekerImpl) Count() int {
 }
 
 func (self *seekerImpl) Look(method string, url string) (*http.Response, error) {
-	item := self.index.Find(method, url, SEARCH_SUBSTR)
+	item := self.index.Find(method, url)
 	if item == nil {
 		return nil, nil
 	}
