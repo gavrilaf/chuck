@@ -111,8 +111,9 @@ var _ = Describe("Seeker", func() {
 				})
 
 				It("should response has correct body", func() {
+					expected := []byte("{\n\t\"colors\": []\n}\n")
 					buf, _ := DumpRespBody(resp)
-					Expect(string(buf)).To(Equal(respBody))
+					Expect(buf).To(Equal(expected))
 				})
 			})
 

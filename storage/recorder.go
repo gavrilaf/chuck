@@ -196,6 +196,11 @@ func (recorder *recorderImpl) writeResponseBody(fname string, resp *http.Respons
 	}
 	defer fp.Close()
 
+	// Pretty print json
+	if utils.IsRespHasJsonContent(resp) {
+		b = utils.FormatJson(b)
+	}
+
 	_, err = fp.Write(b)
 	return err
 }
