@@ -8,7 +8,7 @@ import (
 )
 
 func CreateProxy() (*goproxy.ProxyHttpServer, error) {
-	cert, err := tls.LoadX509KeyPair("ca.pem", "key.pem")
+	cert, err := tls.LoadX509KeyPair("./ca.pem", "./key.pem")
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,9 @@ test:
 	go test ./storage -v
 	go test ./handlers -v
 
+build:
+	go build
+
 run-rec:
 	go build
 	./chuck rec -address=127.0.0.1 -port=8123 -folder=log -prevent_304=1 -new_folder=1
