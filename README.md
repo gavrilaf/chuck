@@ -2,6 +2,19 @@
 
 The proxy server for mobile application debugging, mocking nonexisting API, record and run integration tests.
 
+## Installation
+
+1. Install go
+MacOS using brew: *brew install go*
+Other operation systems: https://golang.org/doc/install
+
+2. Clone chuck repository: *git clone https://github.com/gavrilaf/chuck.git*
+
+Chuck uses golang modules so you don't need to clone Chuck repo to the GOPATH directory. Clone Chuck anywhere. But if you clone Chuck to the GOPATH folder then setup GO111MODULE=on environment variable. Or build and run Chuck using makefile as described below.
+
+3. Load dependencies, build & check chuck: *make test* from the Chuck folder
+This command build the project and run all unit tests. All tests should be passed.
+
 ## How to use
 
 Before run you have to install certificate from the project folder as root certificate (or generate and install new one).
@@ -58,6 +71,19 @@ root
 *chuck intg_rec [-address=addr] [-port=port] [-folder=folder]*
 
 After recording scenarios using recording mode **Chuck** is able to play it. The tested application should call endpoint *https://chuck-url/scenario/scenario_id/app_id/no* before any scenario execution. Each request should contains *'int-test-identifier = app_id'* in the http header. **Chuck** uses this header to determine which scenario is active for this application.
+
+### Using make
+
+*make run-rec/run-dgb/run-intg/run-intg-rec* is running **Сhuck** in different modes with default parameters.
+
+### How to generate new root certificates
+
+### Install self signed certificates on iOS simulator
+1. Launch Safari in the simulator.
+2. Drag’n’Drop ‘ca.pem’ file into the browser address line.
+3. Install certificate (press "Allow"/"Done"/"Install" on all questions)
+4. Navigate to Settings > General > About > Certificate Trust Settings
+5. Enable full trust for the new installed certificate
 
 ## Developing
 
