@@ -11,6 +11,8 @@ github.com/gavrilaf/chuck v0.0.0-20190212120714-73f3027f5761 h1:zRVlpgMLYdoMGI+P
 github.com/gavrilaf/chuck v0.0.0-20190212120714-73f3027f5761/go.mod h1:lNnW3hwcQWoPj76gGO86n7o05t2HzKj2U/MIInrjLww=
 github.com/gavrilaf/grouter v0.1.0 h1:J73MVKnoEQJJ+l58KOsdOiG1K3odRraoT1iCU3pVdKc=
 github.com/gavrilaf/grouter v0.1.0/go.mod h1:UbzY1NPwsFTHITlqA/Bhh/j5MNkHV89xEUwe+K8Mk+Y=
+github.com/gavrilaf/grouter v0.2.0 h1:jsIyoOs8r3dWFsjiVPRHWpY+jRhqIfq+uCgfwr0C2Ic=
+github.com/gavrilaf/grouter v0.2.0/go.mod h1:UbzY1NPwsFTHITlqA/Bhh/j5MNkHV89xEUwe+K8Mk+Y=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
