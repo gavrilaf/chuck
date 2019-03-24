@@ -15,6 +15,8 @@ var _ = Describe("Index", func() {
 		item1 IndexItem
 		item2 IndexItem
 		item3 IndexItem
+		item4 IndexItem
+		item5 IndexItem
 	)
 
 	Describe("Create empty index", func() {
@@ -22,6 +24,8 @@ var _ = Describe("Index", func() {
 			item1 = IndexItem{Focused: false, Code: 200, Folder: "r1", Method: "GET", Url: "https://secure.api.com?query=123"}
 			item2 = IndexItem{Focused: true, Code: 400, Folder: "r2", Method: "POST", Url: "https://profile.node.com/user/:user_id"}
 			item3 = IndexItem{Focused: true, Code: 200, Folder: "r3", Method: "GET", Url: "https://test.aaa.r53.amazon.net:443/secure.amazon.com/v1/authinit?format=json&apikey=*&code=*"}
+			item4 = IndexItem{Focused: true, Code: 200, Folder: "r4", Method: "GET", Url: "https://test.net/breadcrumb/offers?orderby=Boosted&top=20&skip=0&breadcrumb=Home/Men/All%20Men&category=mens-view-all&filterby=store%20eq%201&apikey=1111"}
+			item5 = IndexItem{Focused: true, Code: 200, Folder: "r5", Method: "GET", Url: "https://test.net/breadcrumb/offers?orderby=Boosted&top=20&skip=0&breadcrumb=Home/Men/All%20Men&category=mens-view-all&filterby=searchcolorfacet%20eq%20'Black'&apikey=1111"}
 
 			subject = NewIndex()
 		})
@@ -35,21 +39,44 @@ var _ = Describe("Index", func() {
 				subject.Add(item1)
 				subject.Add(item2)
 				subject.Add(item3)
+				subject.Add(item4)
 			})
 
-			It("should return correct object", func() {
+			It("should return the correct item (1)", func() {
 				p := subject.Find("GET", "https://secure.api.com?query=123")
 				Expect(p).To(Equal(&item1))
 			})
 
-			It("should return correct object", func() {
+			It("should return the correct item (2)", func() {
 				p := subject.Find("POST", "https://profile.node.com/user/123")
 				Expect(p).To(Equal(&item2))
 			})
 
-			It("should return correct object", func() {
-				p := subject.Find("GET", "https://test.aaa.r53.amazon.net:443/secure.amazon.com/v1/authinit?format=json&apikey=GQZExhNLtY7e4kiFCuZAaw72rkSUcFuY&code=RMJKAZiOIfW8qWbRJlqYL-QoWcF4L8SMFXtlFtkavZU*")
+			It("should return the correct item (3)", func() {
+				p := subject.Find("GET", "https://test.aaa.r53.amazon.net:443/secure.amazon.com/v1/authinit?format=json&apikey=1111&code=RMJKAZiOIfW8qWbRJlqYL-QoWcF4L8SMFXtlFtkavZU*")
 				Expect(p).To(Equal(&item3))
+			})
+
+			It("should return the correct item (4)", func() {
+				p := subject.Find("GET", "https://test.net/breadcrumb/offers?orderby=Boosted&top=20&skip=0&breadcrumb=Home/Men/All%20Men&category=mens-view-all&filterby=store%20eq%201&apikey=1111")
+				Expect(p).To(Equal(&item4))
+			})
+
+			It("should return nil for request with additional query param", func() {
+				p := subject.Find("GET", "https://test.net/breadcrumb/offers?orderby=Boosted&top=20&skip=0&breadcrumb=Home/Men/All%20Men&category=mens-view-all&filterby=searchcolorfacet%20eq%20'Black'&apikey=1111")
+				Expect(p).To(BeNil())
+			})
+
+			Describe("Search by additional search param", func() {
+				BeforeEach(func() {
+					subject.Add(item5)
+				})
+
+				It("should return the correct item (5)", func() {
+					p := subject.Find("GET", "https://test.net/breadcrumb/offers?orderby=Boosted&top=20&skip=0&breadcrumb=Home/Men/All%20Men&category=mens-view-all&filterby=searchcolorfacet%20eq%20'Black'&apikey=1111")
+					Expect(p).To(Equal(&item5))
+				})
+
 			})
 		})
 
