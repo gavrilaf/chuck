@@ -12,17 +12,18 @@ import (
 )
 
 type recorderImpl struct {
-	name      string
-	focused   bool
-	root      *afero.Afero
-	indexFile afero.File
-	index     Index
-	tracker   Tracker
-	mux       *sync.Mutex
-	log       utils.Logger
+	name        string
+	focused     bool
+	logRequests bool
+	root        *afero.Afero
+	indexFile   afero.File
+	index       Index
+	tracker     Tracker
+	mux         *sync.Mutex
+	log         utils.Logger
 }
 
-func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool) (Recorder, error) {
+func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool) (Recorder, error) {
 	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
 		return nil, err
@@ -46,13 +47,14 @@ func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder b
 	}
 
 	return &recorderImpl{
-		name:      name,
-		root:      root,
-		indexFile: indexFp,
-		index:     index,
-		tracker:   NewTracker(int64(counter), log),
-		mux:       &sync.Mutex{},
-		log:       log,
+		name:        name,
+		logRequests: logRequests,
+		root:        root,
+		indexFile:   indexFp,
+		index:       index,
+		tracker:     NewTracker(int64(counter), log),
+		mux:         &sync.Mutex{},
+		log:         log,
 	}, nil
 }
 
@@ -88,14 +90,16 @@ func (self *recorderImpl) RecordRequest(req *http.Request, session int64) (*Pend
 		return nil, err
 	}
 
-	err = self.writeHeader(path.Join(folder, "req_header.json"), req.Header)
-	if err != nil {
-		self.log.Error("Couldn't write request header: %v", err)
-	}
+	if self.logRequests {
+		err = self.writeHeader(path.Join(folder, "req_header.json"), req.Header)
+		if err != nil {
+			self.log.Error("Couldn't write request header: %v", err)
+		}
 
-	self.writeRequesteBody(path.Join(folder, "req_body.json"), req)
-	if err != nil {
-		self.log.Error("Couldn't write request body: %v", err)
+		self.writeRequesteBody(path.Join(folder, "req_body.json"), req)
+		if err != nil {
+			self.log.Error("Couldn't write request body: %v", err)
+		}
 	}
 
 	return pendingReq, nil

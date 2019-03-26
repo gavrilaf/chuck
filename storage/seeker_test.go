@@ -63,7 +63,7 @@ var _ = Describe("Seeker", func() {
 
 			resp := MakeResponse2(200, header, respBody)
 
-			recorder, _ := NewRecorder(fs, log, "test", false, false)
+			recorder, _ := NewRecorder(fs, log, "test", false, false, true)
 
 			recorder.RecordRequest(req1, 1)
 			recorder.RecordResponse(resp, 1)

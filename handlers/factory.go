@@ -11,7 +11,7 @@ import (
 // Recorder
 
 func NewRecorderHandler(config *RecorderConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
-	recorder, err := storage.NewRecorder(fs, log, config.Folder, config.CreateNewFolder, false)
+	recorder, err := storage.NewRecorder(fs, log, config.Folder, config.CreateNewFolder, false, true)
 	if err != nil {
 		return nil, err
 	}

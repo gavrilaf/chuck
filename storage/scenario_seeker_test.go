@@ -35,19 +35,19 @@ var _ = Describe("ScenarioSeeker", func() {
 		fs := afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 
-		recorder1, _ := NewRecorder(fs, log, "test/folder1/scenario-1", false, false)
+		recorder1, _ := NewRecorder(fs, log, "test/folder1/scenario-1", false, false, true)
 		recorder1.SetFocusedMode(true)
 
 		recorder1.RecordRequest(req1, 1)
 		recorder1.RecordResponse(resp, 1)
 
-		recorder2, _ := NewRecorder(fs, log, "test/folder2/scenario-2", false, false)
+		recorder2, _ := NewRecorder(fs, log, "test/folder2/scenario-2", false, false, true)
 		recorder2.SetFocusedMode(true)
 
 		recorder2.RecordRequest(req2, 1)
 		recorder2.RecordResponse(resp, 1)
 
-		recorder3, _ := NewRecorder(fs, log, "test/folder2/scenario-3", false, false)
+		recorder3, _ := NewRecorder(fs, log, "test/folder2/scenario-3", false, false, true)
 		recorder3.SetFocusedMode(true)
 
 		recorder3.RecordRequest(req1, 1)

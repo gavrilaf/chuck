@@ -41,7 +41,7 @@ func (self *scRecorderImpl) PendingCount() int {
 }
 
 func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorder(p.root, p.log, name, false, true)
+	recorder, err := NewRecorder(p.root, p.log, name, false, true, false)
 	if err != nil {
 		return err
 	}
