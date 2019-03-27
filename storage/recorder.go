@@ -12,18 +12,19 @@ import (
 )
 
 type recorderImpl struct {
-	name        string
-	focused     bool
-	logRequests bool
-	root        *afero.Afero
-	indexFile   afero.File
-	index       Index
-	tracker     Tracker
-	mux         *sync.Mutex
-	log         utils.Logger
+	name         string
+	focused      bool
+	logRequests  bool
+	applyFilters bool
+	root         *afero.Afero
+	indexFile    afero.File
+	index        Index
+	tracker      Tracker
+	mux          *sync.Mutex
+	log          utils.Logger
 }
 
-func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool) (Recorder, error) {
+func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool, applyFilters bool) (Recorder, error) {
 	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
 		return nil, err
@@ -47,14 +48,15 @@ func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder b
 	}
 
 	return &recorderImpl{
-		name:        name,
-		logRequests: logRequests,
-		root:        root,
-		indexFile:   indexFp,
-		index:       index,
-		tracker:     NewTracker(int64(counter), log),
-		mux:         &sync.Mutex{},
-		log:         log,
+		name:         name,
+		logRequests:  logRequests,
+		applyFilters: applyFilters,
+		root:         root,
+		indexFile:    indexFp,
+		index:        index,
+		tracker:      NewTracker(int64(counter), log),
+		mux:          &sync.Mutex{},
+		log:          log,
 	}, nil
 }
 
@@ -96,7 +98,7 @@ func (self *recorderImpl) RecordRequest(req *http.Request, session int64) (*Pend
 			self.log.Error("Couldn't write request header: %v", err)
 		}
 
-		self.writeRequesteBody(path.Join(folder, "req_body.json"), req)
+		err = self.writeRequesteBody(path.Join(folder, "req_body.json"), req)
 		if err != nil {
 			self.log.Error("Couldn't write request body: %v", err)
 		}
@@ -119,6 +121,12 @@ func (self *recorderImpl) RecordResponse(resp *http.Response, session int64) (*P
 	}
 
 	folder := "r_" + strconv.FormatInt(pendingReq.Id, 10)
+
+	if self.applyFilters && resp.StatusCode == 404 { // do not record 404
+		self.root.RemoveAll(folder)
+		return pendingReq, nil
+	}
+
 	line := FormatIndexItem(pendingReq.Method, pendingReq.Url, resp.StatusCode, folder, self.focused)
 	_, err = self.indexFile.WriteString(line + "\n")
 	if err != nil {

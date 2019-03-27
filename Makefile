@@ -23,6 +23,6 @@ run-intg:
 
 run-intg-rec:
 	go build
-	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=0
+	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1
 
 	
