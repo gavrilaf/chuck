@@ -42,7 +42,10 @@ var _ = Describe("Config", func() {
 					BaseConfig:      defaultBase("rec"),
 					CreateNewFolder: true,
 					Prevent304:      true,
+					OnlyNew:         false,
 					LogAsFocused:    false,
+					LogRequests:     true,
+					ApplyFilters:    false,
 				}
 			})
 
@@ -64,7 +67,10 @@ var _ = Describe("Config", func() {
 					},
 					CreateNewFolder: false,
 					Prevent304:      false,
+					OnlyNew:         false,
 					LogAsFocused:    true,
+					LogRequests:     true,
+					ApplyFilters:    false,
 				}
 			})
 
@@ -99,6 +105,9 @@ var _ = Describe("Config", func() {
 					BaseConfig:      defaultBase("rec"),
 					CreateNewFolder: false,
 					Prevent304:      true,
+					OnlyNew:         true,
+					LogRequests:     false,
+					ApplyFilters:    true,
 				}
 			})
 
@@ -120,6 +129,9 @@ var _ = Describe("Config", func() {
 					},
 					CreateNewFolder: false,
 					Prevent304:      false,
+					OnlyNew:         true,
+					LogRequests:     false,
+					ApplyFilters:    true,
 				}
 			})
 

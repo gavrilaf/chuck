@@ -8,13 +8,16 @@ import (
 )
 
 type scRecorderImpl struct {
-	root     *afero.Afero
-	name     string
-	recorder Recorder
-	log      utils.Logger
+	root         *afero.Afero
+	name         string
+	onlyNew      bool
+	logRequests  bool
+	applyFilters bool
+	recorder     Recorder
+	log          utils.Logger
 }
 
-func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool) (ScenarioRecorder, error) {
+func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool, applyFilters bool) (ScenarioRecorder, error) {
 	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
 		return nil, err
@@ -22,9 +25,12 @@ func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNew
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
 	return &scRecorderImpl{
-		root: root,
-		name: name,
-		log:  log,
+		root:         root,
+		name:         name,
+		onlyNew:      onlyNew,
+		logRequests:  logRequests,
+		applyFilters: applyFilters,
+		log:          log,
 	}, nil
 }
 
@@ -40,34 +46,34 @@ func (self *scRecorderImpl) PendingCount() int {
 	return 0
 }
 
-func (p *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorder(p.root, p.log, name, false, true)
+func (self *scRecorderImpl) ActivateScenario(name string) error {
+	recorder, err := NewRecorder(self.root, self.log, name, false, self.onlyNew, self.logRequests, self.applyFilters)
 	if err != nil {
 		return err
 	}
 
-	if p.recorder != nil {
-		p.recorder.Close()
+	if self.recorder != nil {
+		self.recorder.Close()
 	}
 
 	recorder.SetFocusedMode(true)
-	p.recorder = recorder
+	self.recorder = recorder
 
 	return nil
 }
 
-func (p *scRecorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
-	if p.recorder == nil {
+func (self *scRecorderImpl) RecordRequest(req *http.Request, session int64) (*PendingRequest, error) {
+	if self.recorder == nil {
 		return nil, ErrScenarioRecorderNotActivated
 	}
 
-	return p.recorder.RecordRequest(req, session)
+	return self.recorder.RecordRequest(req, session)
 }
 
-func (p *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
-	if p.recorder == nil {
+func (self *scRecorderImpl) RecordResponse(resp *http.Response, session int64) (*PendingRequest, error) {
+	if self.recorder == nil {
 		return nil, ErrScenarioRecorderNotActivated
 	}
 
-	return p.recorder.RecordResponse(resp, session)
+	return self.recorder.RecordResponse(resp, session)
 }

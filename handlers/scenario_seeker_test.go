@@ -42,7 +42,7 @@ var _ = Describe("ScenarioSeeker handler", func() {
 			req1, _ := MakeRequest("POST", "https://secure.api.com/login", emptyHeader, nil)
 			req2, _ := MakeRequest("GET", "https://secure.api.com/users", emptyHeader, nil)
 
-			recorder1, _ := NewRecorder(fs, log, "test/scenario-1", false, false)
+			recorder1, _ := NewRecorder(fs, log, "test/scenario-1", false, false, false, true)
 			defer recorder1.Close()
 
 			recorder1.SetFocusedMode(true)
@@ -50,7 +50,7 @@ var _ = Describe("ScenarioSeeker handler", func() {
 			recorder1.RecordRequest(req1, 1)
 			recorder1.RecordResponse(resp, 1)
 
-			recorder2, _ := NewRecorder(fs, log, "test/scenario-2", false, false)
+			recorder2, _ := NewRecorder(fs, log, "test/scenario-2", false, false, false, true)
 			defer recorder2.Close()
 
 			recorder2.SetFocusedMode(true)

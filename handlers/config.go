@@ -15,7 +15,10 @@ type RecorderConfig struct {
 	BaseConfig
 	CreateNewFolder bool
 	Prevent304      bool
+	OnlyNew         bool
 	LogAsFocused    bool
+	LogRequests     bool
+	ApplyFilters    bool
 }
 
 type SeekerConfig struct {
@@ -26,6 +29,9 @@ type ScenarioRecorderConfig struct {
 	BaseConfig
 	CreateNewFolder bool
 	Prevent304      bool
+	OnlyNew         bool
+	LogRequests     bool
+	ApplyFilters    bool
 }
 
 type ScenarioSeekerConfig struct {
@@ -49,7 +55,11 @@ func (cfg *BaseConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
 
 // RecorderConfig
 func NewRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder string) *RecorderConfig {
-	cfg := &RecorderConfig{}
+	cfg := &RecorderConfig{
+		OnlyNew:      false,
+		LogRequests:  true,
+		ApplyFilters: false,
+	}
 	cfg.InitFlags(flags, defaultFolder)
 
 	if err := flags.Parse(args); err != nil {
@@ -93,7 +103,11 @@ func (cfg *SeekerConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
 
 // ScenarioRecorderConfig
 func NewScenarioRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder string) *ScenarioRecorderConfig {
-	cfg := &ScenarioRecorderConfig{}
+	cfg := &ScenarioRecorderConfig{
+		OnlyNew:      true,
+		LogRequests:  false,
+		ApplyFilters: true,
+	}
 	cfg.InitFlags(flags, defaultFolder)
 
 	if err := flags.Parse(args); err != nil {
