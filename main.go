@@ -10,7 +10,7 @@ import (
 )
 
 const AppName = "chuck"
-const Version = "0.1.0"
+const Version = "0.1.3"
 
 func main() {
 	ui := &cli.ColoredUi{
