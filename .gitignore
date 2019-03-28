@@ -20,3 +20,6 @@ chuck
 /log-intg
 
 /.idea
+
+/test-runner/.idea
+/test-runner/venv

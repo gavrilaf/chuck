@@ -32,7 +32,7 @@ func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx
 				return resp
 			}
 		} else {
-			p.log.Error("Scenario isn't found for id %s, %s : %s", id[0], method, url)
+			p.log.Error("Scenario isn't found for id %v, %s : %s", id, method, url)
 		}
 	} else {
 		p.log.Error("Integration test header not found for %s : %s", method, url)
@@ -53,6 +53,8 @@ func (p *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *http
 func (p *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
 	sc := ParseActivateScenarioRequest(req)
 	if sc == nil {
+		p.log.Error("Wrong activate scenario request: %v", req.URL.String())
+		w.WriteHeader(404)
 		return
 	}
 

@@ -1,0 +1,14 @@
+{
+	"Cache-Control": [
+		"max-age=0, private, must-revalidate"
+	],
+	"Content-Type": [
+		"*/*; charset=utf-8"
+	],
+	"Date": [
+		"Wed, 27 Mar 2019 15:44:20 GMT"
+	],
+	"Status": [
+		"200 OK"
+	]
+}

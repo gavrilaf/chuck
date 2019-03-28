@@ -6,6 +6,10 @@ test:
 	go test ./storage -v
 	go test ./handlers -v
 
+test-intg:
+	go build
+	./chuck intg -address=127.0.0.1 -port=8123 -folder=test-runner/stubs
+
 build:
 	go build
 
