@@ -1,0 +1,2 @@
+F,	200,	r_1,	GET,	https://test.net:443/v1/authinit?format=json&apikey=*&code=*
+F,	200,	r_7,	GET,	https://test.net:443/v1/customer/profile/preferredstore?format=json&apikey=*

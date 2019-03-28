@@ -1,0 +1,2 @@
+F,	200,	r_2,	POST,	https://test.net:443/v2/authtoken/guest?format=json&apikey=*
+F,	200,	r_3,	DELETE,	https://test.net:443/v1/authtoken/:id?format=json&apikey=*
