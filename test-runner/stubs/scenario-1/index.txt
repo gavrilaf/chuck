@@ -1,0 +1,3 @@
+F,	200,	r_1,	GET,	https://test.net:443/v1/authinit?format=json&apikey=*&code=*
+F,	200,	r_2,	GET,	https://test.net:443/v1/verify?verifier=*
+F,	200,	r_3,	POST,	https://test.net:443/v1/*?format=json&apikey=:apikey

@@ -36,6 +36,7 @@ type ScenarioRecorderConfig struct {
 
 type ScenarioSeekerConfig struct {
 	BaseConfig
+	Verbose bool
 }
 
 // BaseConfig
@@ -70,7 +71,8 @@ func NewRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder string)
 }
 
 func (cfg *RecorderConfig) String() string {
-	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogAsFocused=%t", cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogAsFocused)
+	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogAsFocused=%t\nLogRequests=%t\nApplyFilters=%t",
+		cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogAsFocused, cfg.LogRequests, cfg.ApplyFilters)
 }
 
 func (cfg *RecorderConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
@@ -79,6 +81,8 @@ func (cfg *RecorderConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) 
 	flags.BoolVar(&cfg.CreateNewFolder, "new_folder", true, "Create new folder inside root for log")
 	flags.BoolVar(&cfg.Prevent304, "prevent_304", true, "Prevent 304 http answer")
 	flags.BoolVar(&cfg.LogAsFocused, "focused", false, "Log all requests as focused")
+	flags.BoolVar(&cfg.LogRequests, "requests", true, "Log requests")
+	flags.BoolVar(&cfg.ApplyFilters, "filters", false, "Apply filters")
 }
 
 // SeekerConfig
@@ -118,7 +122,8 @@ func NewScenarioRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder
 }
 
 func (cfg *ScenarioRecorderConfig) String() string {
-	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t", cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304)
+	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogRequests=%t\nApplyFilters=%t",
+		cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogRequests, cfg.ApplyFilters)
 }
 
 func (cfg *ScenarioRecorderConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
@@ -126,11 +131,16 @@ func (cfg *ScenarioRecorderConfig) InitFlags(flags *flag.FlagSet, defaultFolder 
 
 	flags.BoolVar(&cfg.CreateNewFolder, "new_folder", false, "Create new folder inside root for log")
 	flags.BoolVar(&cfg.Prevent304, "prevent_304", true, "Prevent 304 http answer")
+	flags.BoolVar(&cfg.LogRequests, "requests", false, "Log requests")
+	flags.BoolVar(&cfg.ApplyFilters, "filters", true, "Apply filters")
+
 }
 
 // ScenarioSeekerConfig
 func NewScenarioSeekerConfig(flags *flag.FlagSet, args []string, defaultFolder string) *ScenarioSeekerConfig {
-	cfg := &ScenarioSeekerConfig{}
+	cfg := &ScenarioSeekerConfig{
+		Verbose: true,
+	}
 	cfg.InitFlags(flags, defaultFolder)
 
 	if err := flags.Parse(args); err != nil {
@@ -141,9 +151,11 @@ func NewScenarioSeekerConfig(flags *flag.FlagSet, args []string, defaultFolder s
 }
 
 func (cfg *ScenarioSeekerConfig) String() string {
-	return cfg.BaseConfig.String()
+	return fmt.Sprintf("%s\nVerbose: %t", cfg.BaseConfig.String(), cfg.Verbose)
 }
 
 func (cfg *ScenarioSeekerConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
 	cfg.BaseConfig.InitFlags(flags, defaultFolder)
+
+	flags.BoolVar(&cfg.Verbose, "verbose", true, "Write full log (not recommended in multiuser mode")
 }

@@ -6,23 +6,26 @@ test:
 	go test ./storage -v
 	go test ./handlers -v
 
+test-intg:
+	go build
+	./chuck intg -address=127.0.0.1 -port=8123 -folder=test-runner/stubs -verbose=1
+
 build:
 	go build
 
 run-rec:
-	go build
-	./chuck rec -address=127.0.0.1 -port=8123 -folder=log -prevent_304=1 -new_folder=1
+	./chuck rec -address=127.0.0.1 -port=8123 -folder=log -prevent_304=1 -new_folder=1 -focused=0 -requests=1 -filters=0
 
 run-dbg:
-	go build
 	./chuck dbg -address=127.0.0.1 -port=8123 -folder=dbg
 
 run-intg:
-	go build
-	./chuck intg -address=127.0.0.1 -port=8123 -folder=intg
+	./chuck intg -address=127.0.0.1 -port=8123 -folder=intg -verbose=0
+
+run-intg-v:
+	./chuck intg -address=127.0.0.1 -port=8123 -folder=intg -verbose=1
 
 run-intg-rec:
-	go build
-	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1
+	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1 -requests=0 -filters=1
 
 	

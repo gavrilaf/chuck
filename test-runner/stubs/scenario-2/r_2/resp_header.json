@@ -1,0 +1,8 @@
+{
+	"Cache-Control": [
+		"max-age=0, private, must-revalidate"
+	],
+	"Content-Type": [
+		"*/*; charset=utf-8"
+	]
+}
