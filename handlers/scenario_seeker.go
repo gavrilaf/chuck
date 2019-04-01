@@ -24,11 +24,11 @@ func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx
 		if ok {
 			resp, err := p.seeker.Look(scenario, method, url)
 			if err != nil {
-				p.log.Warn("Searching response error %s, %s : %s, (%v)", scenario, method, url, err)
+				p.log.Warn("Searching response error %v, %s, %s : %s, (%v)", id, scenario, method, url, err)
 			} else if resp == nil {
-				p.log.Warn("Saved response isn't found for scenarion %s, %s : %s", scenario, method, url)
+				p.log.Warn("Saved response isn't found for client %v, scenario %s, %s : %s", id, scenario, method, url)
 			} else {
-				p.log.Info("Stubbed response for scenarion %s, request %s : %s", scenario, method, url)
+				p.log.Info("Stubbed response for client %v, scenario %s, request %s : %s", id, scenario, method, url)
 				return resp
 			}
 		} else {
