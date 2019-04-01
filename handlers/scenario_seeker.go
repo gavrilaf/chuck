@@ -10,32 +10,37 @@ import (
 
 type scenarioSeekerHandler struct {
 	seeker    storage.ScenarioSeeker
+	verbose   bool
 	log       utils.Logger
 	scenarios map[string]string
 }
 
-func (p *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
+func (self *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
 	method := req.Method
 	url := req.URL.String()
 	id := GetScenarioId(req)
 
 	if len(id) != 0 {
-		scenario, ok := p.scenarios[id]
+		scenario, ok := self.scenarios[id]
 		if ok {
-			resp, err := p.seeker.Look(scenario, method, url)
+			resp, err := self.seeker.Look(scenario, method, url)
 			if err != nil {
-				p.log.Warn("Searching response error %v, %s, %s : %s, (%v)", id, scenario, method, url, err)
+				self.log.Error("Searching response error %v, %s, %s : %s, (%v)", id, scenario, method, url, err)
 			} else if resp == nil {
-				p.log.Warn("Saved response isn't found for client %v, scenario %s, %s : %s", id, scenario, method, url)
+				if self.verbose {
+					self.log.Warn("Saved response isn't found for client %v, scenario %s, %s : %s", id, scenario, method, url)
+				}
 			} else {
-				p.log.Info("Stubbed response for client %v, scenario %s, request %s : %s", id, scenario, method, url)
+				if self.verbose {
+					self.log.Info("Stubbed response for client %v, scenario %s, request %s : %s", id, scenario, method, url)
+				}
 				return resp
 			}
 		} else {
-			p.log.Error("Scenario isn't found for id %v, %s : %s", id, method, url)
+			self.log.Error("Scenario isn't found for id %v, %s : %s", id, method, url)
 		}
 	} else {
-		p.log.Error("Integration test header not found for %s : %s", method, url)
+		self.log.Error("Integration test header not found for %s : %s", method, url)
 	}
 	return utils.MakeResponse2(404, make(http.Header), "")
 }

@@ -48,6 +48,6 @@ func (self *IntgTestRecCommand) Synopsis() string {
 }
 
 func (self *IntgTestRecCommand) Help() string {
-	helpText := "Usage: chuck intg_rec [-address=addr] [-port=port] [-folder=folder] [-new_folder] [-prevent_304]"
+	helpText := "Usage: chuck intg_rec [-address=addr] [-port=port] [-folder=folder] [-new_folder] [-prevent_304] [-requests] [-filters]"
 	return strings.TrimSpace(helpText)
 }

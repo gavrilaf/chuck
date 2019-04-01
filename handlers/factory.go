@@ -49,6 +49,7 @@ func NewScenarioSeekerHandler(config *ScenarioSeekerConfig, fs afero.Fs, log uti
 
 	return &scenarioSeekerHandler{
 		seeker:    seeker,
+		verbose: config.Verbose,
 		log:       log,
 		scenarios: make(map[string]string),
 	}, nil
