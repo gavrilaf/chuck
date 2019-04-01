@@ -8,7 +8,7 @@ test:
 
 test-intg:
 	go build
-	./chuck intg -address=127.0.0.1 -port=8123 -folder=test-runner/stubs
+	./chuck intg -address=127.0.0.1 -port=8123 -folder=test-runner/stubs -verbose=1
 
 build:
 	go build

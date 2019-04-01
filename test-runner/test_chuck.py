@@ -191,7 +191,7 @@ def run_scenario_3(client_id):
 class MutlithreadTests(unittest.TestCase):
 
     def test_scenario_1_multiple_clients(self):
-        count = 10
+        count = 50
         runner = []
 
         for i in range(count):

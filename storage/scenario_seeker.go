@@ -32,7 +32,7 @@ func NewScenarioSeeker(fs afero.Fs, log utils.Logger, folder string) (ScenarioSe
 			if err != nil {
 				log.Error("Couldn't load index by path %s, %v", path, err)
 			} else {
-				log.Info("Loaded scenarion %s", folder)
+				log.Info("Loaded scenario %s", folder)
 			}
 
 			seekers[scenarioName] = seeker
