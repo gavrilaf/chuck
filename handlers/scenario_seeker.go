@@ -55,21 +55,21 @@ func (p *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *http
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func (p *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
+func (self *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
 	sc := ParseActivateScenarioRequest(req)
 	if sc == nil {
-		p.log.Error("Wrong activate scenario request: %v", req.URL.String())
+		self.log.Error("Wrong activate scenario request: %v", req.URL.String())
 		w.WriteHeader(404)
 		return
 	}
 
-	if p.seeker.IsScenarioExists(sc.Scenario) {
-		p.log.Info("Activated scenario %s with id %s", sc.Scenario, sc.Id)
-		p.scenarios[sc.Id] = sc.Scenario
+	if self.seeker.IsScenarioExists(sc.Scenario) {
+		self.log.Info("Activated scenario %s with id %s", sc.Scenario, sc.Id)
+		self.scenarios[sc.Id] = sc.Scenario
 		w.WriteHeader(200)
 		return
 	} else {
-		p.log.Error("Scenario %s not found", sc.Scenario)
+		self.log.Error("Scenario %s not found", sc.Scenario)
 	}
 
 	w.WriteHeader(404)
