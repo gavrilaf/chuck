@@ -18,9 +18,8 @@ chuck
 /dbg
 /intg
 /log-intg
+/cleaned
 
-/.idea
-
-/test-runner/.idea
-/test-runner/venv
-test-runner/__pycache__
+**/.idea
+**/venv
+**/__pycache__
