@@ -28,4 +28,9 @@ run-intg-v:
 run-intg-rec:
 	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1 -requests=0 -filters=0
 
+copy-intg-auto:
+	source ext-tools/sc-copy/venv/bin/activate; \
+	python ext-tools/sc-copy/main.py copy log-intg sc-cleaned auto; \
+	deactivate; \
+
 	

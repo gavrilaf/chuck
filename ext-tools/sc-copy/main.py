@@ -1,7 +1,19 @@
+"""Chuck scenarios cleaner
+
+Usage:
+  sc_copy.py copy <from> <to> (auto|ask)
+  sc_copy.py new <name> <from> <to>
+  sc_copy.py (-h | --help)
+
+Options:
+  -h --help     Show this screen.
+"""
+
 import sys
 import os.path
 import csv
 from utils import *
+from docopt import docopt
 
 MODE_AUTO = 1
 MODE_INTERACTIVE = 2
@@ -73,14 +85,22 @@ def copy_scenarios(mode, src_path, dest_path):
             copy_scenario(mode, dirName, dest_path, sc_name)
 
 
-def main(argv):
+def main(args):
     print("sc-copy main")
 
-    src = "./../../log-intg/2019_4_10_9_40_52"
-    dest = "../../cleaned"
+    if args["copy"]:
+        mode = MODE_INTERACTIVE if args["ask"] else MODE_AUTO
+        src = args["<from>"]
+        dest = args["<to>"]
+        copy_scenarios(mode, src, dest)
+    else:
+        print("Doesn't supported yet")
 
-    copy_scenarios(MODE_AUTO, src, dest)
+    # src = "./../../log-intg/2019_4_10_9_40_52"
+    # dest = "../../cleaned"
+    # copy_scenarios(mode, src, dest)
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    args = docopt(__doc__, version='v0.1')
+    main(args)

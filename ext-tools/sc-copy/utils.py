@@ -6,6 +6,8 @@ import re
 re_apikey = re.compile(r"apikey=([^&#]*)", re.IGNORECASE)
 re_code = re.compile(r"code=([^&#]*)", re.IGNORECASE)
 re_verifier = re.compile(r"verifier=([^&#]*)", re.IGNORECASE)
+re_date_from = re.compile(r"from=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
+re_date_to = re.compile(r"to=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
 
 NOT_FOUND_SKIP_RULES = [
     "\"message\": \"Not Found\",",
@@ -48,4 +50,6 @@ def clear_url(url):
     url = re.sub(re_apikey, "apikey=*", url)
     url = re.sub(re_code, "code=*", url)
     url = re.sub(re_verifier, "verifier=*", url)
+    url = re.sub(re_date_from, "from=*", url)
+    url = re.sub(re_date_to, "to=*", url)
     return url
