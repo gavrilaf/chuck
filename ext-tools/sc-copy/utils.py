@@ -9,6 +9,8 @@ re_verifier = re.compile(r"verifier=([^&#]*)", re.IGNORECASE)
 re_date_from = re.compile(r"from=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
 re_date_to = re.compile(r"to=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
 
+aadhi_prefix = "aadhi.cma.r53.nordstrom.net:443/"
+
 NOT_FOUND_SKIP_RULES = [
     "\"message\": \"Not Found\",",
     "\"status\": \"404\""
@@ -47,9 +49,12 @@ def check_skip_by_code(src_path, id, code):
 
 
 def clear_url(url):
+    url = url.replace(aadhi_prefix, "")
+
     url = re.sub(re_apikey, "apikey=*", url)
     url = re.sub(re_code, "code=*", url)
     url = re.sub(re_verifier, "verifier=*", url)
     url = re.sub(re_date_from, "from=*", url)
     url = re.sub(re_date_to, "to=*", url)
+
     return url

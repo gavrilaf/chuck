@@ -7,7 +7,7 @@ import (
 
 var (
 	ActivateScenarioRegx = regexp.MustCompile("/scenario/(.*)/(.*)/no")
-	ScenarioIdHeader     = http.CanonicalHeaderKey("aadhi-identifier")
+	ScenarioIdHeader     = http.CanonicalHeaderKey("automation-test-identifier")
 )
 
 /*
