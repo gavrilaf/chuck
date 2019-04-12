@@ -9,11 +9,12 @@ Options:
   -h --help     Show this screen.
 """
 
-import sys
 import os.path
 import csv
 from utils import *
 from docopt import docopt
+import colorama
+from colorama import Fore
 
 MODE_AUTO = 1
 MODE_INTERACTIVE = 2
@@ -30,7 +31,7 @@ def skip_line(mode, src_path, id, code, method, url):
 
 
 def copy_scenario(mode, src_path, dest_path, name):
-    print("Copy scenario {} from {} to {}".format(name, src_path, dest_path))
+    print(Fore.GREEN + "\nCopy scenario {}".format(name))
 
     with open(os.path.join(src_path, 'index.txt'), 'r') as f:
         reader = csv.reader(f, delimiter = '\t')
@@ -47,7 +48,7 @@ def copy_scenario(mode, src_path, dest_path, name):
         url = line[4].strip(STRIP_CHARS)
 
         if skip_line(mode, src_path, id, code, method, url):
-            print("Skip line {}, status code check, code: {}, method: {}, url: {}".format(line_indx, code, method, url))
+            print(Fore.YELLOW + "Skip line {}, {}, {} : {}".format(line_indx, code, method, url))
             line_indx += 1
             continue
 
@@ -61,7 +62,7 @@ def copy_scenario(mode, src_path, dest_path, name):
         result.append((code, new_id, method, new_url))
 
     if len(result) == 0:
-        print("Empty scenario {}".format(name))
+        print(Fore.RED + "Empty scenario {}\n".format(name))
         return
 
     dest_path = os.path.join(dest_path, name)
@@ -77,7 +78,7 @@ def copy_scenario(mode, src_path, dest_path, name):
 
 
 def copy_scenarios(mode, src_path, dest_path):
-    print("Copy scenarios from {} to {}".format(src_path, dest_path))
+    print(Fore.GREEN + "Copy scenarios from {} to {}\n".format(src_path, dest_path))
     for dirName, subdirList, fileList in os.walk(src_path):
         if "index.txt" in fileList:
             subdirList.clear()
@@ -86,21 +87,17 @@ def copy_scenarios(mode, src_path, dest_path):
 
 
 def main(args):
-    print("sc-copy main")
-
     if args["copy"]:
         mode = MODE_INTERACTIVE if args["ask"] else MODE_AUTO
         src = args["<from>"]
         dest = args["<to>"]
         copy_scenarios(mode, src, dest)
     else:
-        print("Doesn't supported yet")
-
-    # src = "./../../log-intg/2019_4_10_9_40_52"
-    # dest = "../../cleaned"
-    # copy_scenarios(mode, src, dest)
+        print(Fore.RED + "Doesn't supported yet")
 
 
 if __name__ == "__main__":
+    colorama.init()
     args = docopt(__doc__, version='v0.1')
     main(args)
+    colorama.deinit()
