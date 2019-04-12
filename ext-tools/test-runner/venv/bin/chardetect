@@ -1,5 +1,4 @@
-#!/Users/eugenf/Documents/Projects/Go/src/github.com/gavrilaf/chuck/test-runner/venv/bin/python
-
+#!/Users/eugenf/Documents/Projects/Go/src/github.com/gavrilaf/chuck/ext-tools/test-runner/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

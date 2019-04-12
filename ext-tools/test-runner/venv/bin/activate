@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/eugenf/Documents/Projects/Go/src/github.com/gavrilaf/chuck/test-runner/venv"
+VIRTUAL_ENV="/Users/eugenf/Documents/Projects/Go/src/github.com/gavrilaf/chuck/ext-tools/test-runner/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
