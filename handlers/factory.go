@@ -11,7 +11,7 @@ import (
 // Recorder
 
 func NewRecorderHandler(config *RecorderConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
-	recorder, err := storage.NewRecorder(fs, log, config.Folder, config.CreateNewFolder, config.OnlyNew, config.LogRequests, config.ApplyFilters)
+	recorder, err := storage.NewRecorder(fs, log, config.Folder, config.CreateNewFolder, config.OnlyNew, config.LogRequests)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func NewScenarioSeekerHandler(config *ScenarioSeekerConfig, fs afero.Fs, log uti
 // Scenario Recorder
 
 func NewScenarioRecorderHandler(config *ScenarioRecorderConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
-	recorder, err := storage.NewScenarioRecorder(fs, log, config.Folder, config.CreateNewFolder, config.OnlyNew, config.LogRequests, config.ApplyFilters)
+	recorder, err := storage.NewScenarioRecorder(fs, log, config.Folder, config.CreateNewFolder, config.OnlyNew, config.LogRequests)
 	if err != nil {
 		return nil, err
 	}

@@ -8,16 +8,15 @@ import (
 )
 
 type scRecorderImpl struct {
-	root         *afero.Afero
-	name         string
-	onlyNew      bool
-	logRequests  bool
-	applyFilters bool
-	recorder     Recorder
-	log          utils.Logger
+	root        *afero.Afero
+	name        string
+	onlyNew     bool
+	logRequests bool
+	recorder    Recorder
+	log         utils.Logger
 }
 
-func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool, applyFilters bool) (ScenarioRecorder, error) {
+func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool) (ScenarioRecorder, error) {
 	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
 		return nil, err
@@ -25,12 +24,11 @@ func NewScenarioRecorder(fs afero.Fs, log utils.Logger, folder string, createNew
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, path)}
 	return &scRecorderImpl{
-		root:         root,
-		name:         name,
-		onlyNew:      onlyNew,
-		logRequests:  logRequests,
-		applyFilters: applyFilters,
-		log:          log,
+		root:        root,
+		name:        name,
+		onlyNew:     onlyNew,
+		logRequests: logRequests,
+		log:         log,
 	}, nil
 }
 
@@ -47,7 +45,7 @@ func (self *scRecorderImpl) PendingCount() int {
 }
 
 func (self *scRecorderImpl) ActivateScenario(name string) error {
-	recorder, err := NewRecorder(self.root, self.log, name, false, self.onlyNew, self.logRequests, self.applyFilters)
+	recorder, err := NewRecorder(self.root, self.log, name, false, self.onlyNew, self.logRequests)
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ class ChuckTester:
     def activate_scenario(self, scenario, id):
         resp = requests.put(self.chuck_endpoint + "/scenario/" + scenario + "/" + id + "/no")
 
-        self.s.headers = {'aadhi-identifier': id}
+        self.s.headers = {'automation-test-identifier': id}
         # print("Activate scenario {}, result {}".format(scenario, resp))
 
     # scenario 1
