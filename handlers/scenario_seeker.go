@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/spf13/afero"
 	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
 
@@ -13,6 +14,20 @@ type scenarioSeekerHandler struct {
 	verbose   bool
 	log       utils.Logger
 	scenarios map[string]string
+}
+
+func NewScenarioSeekerHandler(config *ScenarioSeekerConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
+	seeker, err := storage.NewScenarioSeeker(fs, log, config.Folder)
+	if err != nil {
+		return nil, err
+	}
+
+	return &scenarioSeekerHandler{
+		seeker:    seeker,
+		verbose:   config.Verbose,
+		log:       log,
+		scenarios: make(map[string]string),
+	}, nil
 }
 
 func (self *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
