@@ -43,7 +43,7 @@ var _ = Describe("Seeker handler", func() {
 			req, _ = MakeRequest2("POST", "https://secure.api.com/login", header, "")
 			resp = MakeResponse2(200, header, "{}")
 
-			recorder, _ := NewRecorder(fs, log, "test", false, false, false, true)
+			recorder, _ := NewRecorder(fs, log, "test", false, false, false)
 			recorder.SetFocusedMode(true)
 
 			recorder.RecordRequest(req, 1)

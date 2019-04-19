@@ -56,7 +56,7 @@ var _ = Describe("Recorder", func() {
 
 		Context("when createNewFolder is true", func() {
 			BeforeEach(func() {
-				subject, err = NewRecorder(root.Fs, log, "log-1", true, false, true, false)
+				subject, err = NewRecorder(root.Fs, log, "log-1", true, false, true)
 
 				path := "log-1/" + subject.Name()
 				dirExists, _ = root.DirExists(path)
@@ -82,7 +82,7 @@ var _ = Describe("Recorder", func() {
 
 		Context("when createNewFolder is false", func() {
 			BeforeEach(func() {
-				subject, err = NewRecorder(root.Fs, log, "log-2", false, false, true, false)
+				subject, err = NewRecorder(root.Fs, log, "log-2", false, false, true)
 				indexExists, _ = root.Exists("log-2/" + IndexFileName)
 			})
 
@@ -110,7 +110,7 @@ var _ = Describe("Recorder", func() {
 		)
 
 		BeforeEach(func() {
-			subject, _ = NewRecorder(root.Fs, log, "log-3", true, false, true, false)
+			subject, _ = NewRecorder(root.Fs, log, "log-3", true, false, true)
 			basePath = "log-3/" + subject.Name()
 			session = 10
 			req = createRequest("POST")
@@ -187,7 +187,7 @@ var _ = Describe("Recorder", func() {
 					)
 
 					BeforeEach(func() {
-						subjectNew, err = NewRecorder(root.Fs, log, basePath, false, true, true, false)
+						subjectNew, err = NewRecorder(root.Fs, log, basePath, false, true, true)
 					})
 
 					It("should not error occurred", func() {
@@ -310,67 +310,6 @@ var _ = Describe("Recorder", func() {
 					dumpExists, _ := root.Exists(dumpPath + "resp_body.json")
 					Expect(dumpExists).ToNot(BeTrue())
 				})
-			})
-		})
-
-		Describe("with (onlyNew=true, logRequest=false, appyFilters=true)", func() {
-			var (
-				basePath string
-			)
-
-			BeforeEach(func() {
-				subject, err = NewRecorder(root.Fs, log, "log-4", true, true, false, true)
-				basePath = "log-4/" + subject.Name()
-
-				req := createRequest("POST")
-				resp := createResponse()
-
-				subject.RecordRequest(req, 10)
-				subject.RecordResponse(resp, 10)
-
-				subject.RecordRequest(req, 11)
-				subject.RecordResponse(resp, 11)
-
-				req = createRequest("GET")
-
-				subject.RecordRequest(req, 12)
-				subject.RecordResponse(resp, 12)
-
-				req = createRequest("PUT")
-				resp.StatusCode = 404
-
-				subject.RecordRequest(req, 13)
-				subject.RecordResponse(resp, 13)
-			})
-
-			It("should should contains only two successful requests", func() {
-				fi, _ := root.Open(basePath + "/" + IndexFileName)
-				defer fi.Close()
-
-				scanner := bufio.NewScanner(fi)
-
-				Expect(scanner.Scan()).To(BeTrue())
-				Expect(scanner.Text()).To(Equal(fmt.Sprintf("N,\t200,\tr_1,\tPOST,\thttps://secure.api.com?query=123")))
-
-				Expect(scanner.Scan()).To(BeTrue())
-				Expect(scanner.Text()).To(Equal(fmt.Sprintf("N,\t200,\tr_2,\tGET,\thttps://secure.api.com?query=123")))
-
-				Expect(scanner.Scan()).To(BeFalse(), "should contain only two records")
-			})
-
-			It("should create folders only for recorded requests", func() {
-				Expect(root.Exists(basePath + "/r_1")).To(BeTrue())
-				Expect(root.Exists(basePath + "/r_2")).To(BeTrue())
-
-				Expect(root.Exists(basePath + "/r_3")).ToNot(BeTrue())
-			})
-
-			It("should record only response header & body", func() {
-				Expect(root.Exists(basePath + "/r_1/req_header.json")).ToNot(BeTrue())
-				Expect(root.Exists(basePath + "/r_1/req_body.json")).ToNot(BeTrue())
-
-				Expect(root.Exists(basePath + "/r_1/resp_header.json")).To(BeTrue())
-				Expect(root.Exists(basePath + "/r_1/resp_body.json")).To(BeTrue())
 			})
 		})
 	})

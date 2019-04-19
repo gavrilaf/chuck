@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/spf13/afero"
 	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
 	"sync"
@@ -14,6 +15,20 @@ type seekerHandler struct {
 	tracker storage.Tracker
 	mux     *sync.Mutex
 	log     utils.Logger
+}
+
+func NewSeekerHandler(config *SeekerConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
+	seeker, err := storage.NewSeeker(fs, config.Folder)
+	if err != nil {
+		return nil, err
+	}
+
+	return &seekerHandler{
+		seeker:  seeker,
+		tracker: storage.NewTracker(0, log),
+		mux:     &sync.Mutex{},
+		log:     log,
+	}, nil
 }
 
 func (self *seekerHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {

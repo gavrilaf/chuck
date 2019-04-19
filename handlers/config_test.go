@@ -45,7 +45,6 @@ var _ = Describe("Config", func() {
 					OnlyNew:         false,
 					LogAsFocused:    false,
 					LogRequests:     true,
-					ApplyFilters:    false,
 				}
 			})
 
@@ -57,7 +56,7 @@ var _ = Describe("Config", func() {
 		Context("when args list contains all args", func() {
 			BeforeEach(func() {
 				args := []string{"-address=www.google.com", "-port=9999", "-folder=log-99", "-focused",
-					"-prevent_304=0", "-new_folder=0", "-requests=0", "-filters=1"}
+					"-prevent_304=0", "-new_folder=0", "-requests=0"}
 				subject = NewRecorderConfig(flags, args, "rec")
 
 				expected = &RecorderConfig{
@@ -71,7 +70,6 @@ var _ = Describe("Config", func() {
 					OnlyNew:         false,
 					LogAsFocused:    true,
 					LogRequests:     false,
-					ApplyFilters:    true,
 				}
 			})
 
@@ -108,7 +106,6 @@ var _ = Describe("Config", func() {
 					Prevent304:      true,
 					OnlyNew:         true,
 					LogRequests:     false,
-					ApplyFilters:    true,
 				}
 			})
 
@@ -120,7 +117,7 @@ var _ = Describe("Config", func() {
 		Context("when args list contains all args", func() {
 			BeforeEach(func() {
 				args := []string{"-address=www.google.com", "-port=9999", "-folder=log-99", "-prevent_304=0",
-					"-new_folder=0", "-requests=1", "-filters=0"}
+					"-new_folder=0", "-requests=1"}
 				subject = NewScenarioRecorderConfig(flags, args, "rec")
 
 				expected = &ScenarioRecorderConfig{
@@ -133,7 +130,6 @@ var _ = Describe("Config", func() {
 					Prevent304:      false,
 					OnlyNew:         true,
 					LogRequests:     true,
-					ApplyFilters:    false,
 				}
 			})
 
