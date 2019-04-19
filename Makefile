@@ -50,7 +50,7 @@ test-intg-r:
 	)
 
 run-rec:
-	./chuck rec -address=127.0.0.1 -port=8123 -folder=log -prevent_304=1 -new_folder=1 -focused=0 -requests=1 -filters=0
+	./chuck rec -address=127.0.0.1 -port=8123 -folder=log -prevent_304=1 -new_folder=1 -focused=0 -requests=1
 
 run-dbg:
 	./chuck dbg -address=127.0.0.1 -port=8123 -folder=dbg
