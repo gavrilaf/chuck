@@ -11,15 +11,8 @@ import (
 
 type recordHandler struct {
 	recorder       storage.Recorder
-	ch             chan recordMeta
 	log            utils.Logger
 	preventCaching bool
-}
-
-type recordMeta struct {
-	req  *http.Request
-	resp *http.Response
-	ctx  *goproxy.ProxyCtx
 }
 
 func NewRecorderHandler(config *RecorderConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
@@ -29,32 +22,19 @@ func NewRecorderHandler(config *RecorderConfig, fs afero.Fs, log utils.Logger) (
 	}
 
 	handler := &recordHandler{
-		recorder: recorder,
-		ch:       make(chan recordMeta),
-		log:      log,
-
+		recorder:       recorder,
+		log:            log,
 		preventCaching: config.Prevent304,
 	}
-
-	go func() {
-		for m := range handler.ch {
-			switch {
-			case m.req != nil:
-				_, err := handler.recorder.RecordRequest(m.req, m.ctx.Session)
-				if err != nil {
-					handler.log.Error("Record request error: %v", err)
-				}
-			case m.resp != nil:
-			}
-
-		}
-	}()
 
 	return handler, nil
 }
 
 func (self *recordHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
-	self.ch <- recordMeta{req: req, resp: nil, ctx: ctx}
+	_, err := self.recorder.RecordRequest(req, ctx.Session)
+	if err != nil {
+		self.log.Error("Record request error: %v", err)
+	}
 
 	if self.preventCaching {
 		Prevent304HttpAnswer(req)
@@ -64,7 +44,10 @@ func (self *recordHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *ht
 }
 
 func (self *recordHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
-	self.ch <- recordMeta{req: nil, resp: resp, ctx: ctx}
+	_, err := self.recorder.RecordResponse(resp, ctx.Session)
+	if err != nil {
+		self.log.Error("Record response error: %v", err)
+	}
 }
 
 func (self *recordHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {

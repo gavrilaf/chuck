@@ -62,7 +62,7 @@ run-intg-v:
 	./chuck intg -address=127.0.0.1 -port=8123 -folder=intg -verbose=1
 
 run-intg-rec:
-	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1 -requests=0 -filters=0
+	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1 -requests=0
 
 copy-intg-auto: 
 	( \

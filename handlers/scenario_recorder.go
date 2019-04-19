@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/afero"
 	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
+	"sync"
 
 	"chuck/storage"
 	"chuck/utils"
@@ -11,18 +12,10 @@ import (
 
 type scenarioRecordHandler struct {
 	recorder       storage.ScenarioRecorder
-	ch             chan scRecMeta
+	mux            *sync.Mutex
 	log            utils.Logger
 	scenarios      map[string]string
 	preventCaching bool
-}
-
-type scRecMeta struct {
-	activate bool
-	writer   http.ResponseWriter
-	req      *http.Request
-	resp     *http.Response
-	ctx      *goproxy.ProxyCtx
 }
 
 func NewScenarioRecorderHandler(config *ScenarioRecorderConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
@@ -33,35 +26,23 @@ func NewScenarioRecorderHandler(config *ScenarioRecorderConfig, fs afero.Fs, log
 
 	handler := &scenarioRecordHandler{
 		recorder:       recorder,
-		ch:             make(chan scRecMeta),
+		mux:            &sync.Mutex{},
 		log:            log,
 		scenarios:      make(map[string]string),
 		preventCaching: true,
 	}
 
-	go func() {
-		for m := range handler.ch {
-			if m.activate {
-				handler.tryToActivateScenario(m.writer, m.req)
-			} else if m.req != nil {
-				_, err := handler.recorder.RecordRequest(m.req, m.ctx.Session)
-				if err != nil {
-					handler.log.Error("Record request error: %v", err)
-				}
-			} else if m.resp != nil {
-				_, err := handler.recorder.RecordResponse(m.resp, m.ctx.Session)
-				if err != nil {
-					handler.log.Error("Record response error: %v", err)
-				}
-			}
-		}
-	}()
-
 	return handler, nil
 }
 
 func (self *scenarioRecordHandler) Request(req *http.Request, ctx *goproxy.ProxyCtx) *http.Response {
-	self.ch <- scRecMeta{activate: false, writer: nil, req: req, resp: nil, ctx: ctx}
+	self.mux.Lock()
+	defer self.mux.Unlock()
+
+	_, err := self.recorder.RecordRequest(req, ctx.Session)
+	if err != nil {
+		self.log.Error("Record request error: %v", err)
+	}
 
 	if self.preventCaching {
 		Prevent304HttpAnswer(req)
@@ -71,14 +52,23 @@ func (self *scenarioRecordHandler) Request(req *http.Request, ctx *goproxy.Proxy
 }
 
 func (self *scenarioRecordHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
-	self.ch <- scRecMeta{activate: false, writer: nil, req: nil, resp: resp, ctx: ctx}
+	self.mux.Lock()
+	defer self.mux.Unlock()
+
+	_, err := self.recorder.RecordResponse(resp, ctx.Session)
+	if err != nil {
+		self.log.Error("Record response error: %v", err)
+	}
 }
 
 func (self *scenarioRecordHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
-	self.ch <- scRecMeta{activate: true, writer: w, req: req, resp: nil, ctx: nil}
+	self.tryToActivateScenario(w, req)
 }
 
 func (self *scenarioRecordHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
+	self.mux.Lock()
+	defer self.mux.Unlock()
+
 	sc := ParseActivateScenarioRequest(req)
 	if sc == nil {
 		return
