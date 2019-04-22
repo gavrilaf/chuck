@@ -6,7 +6,7 @@ Usage:\n
     \t make help:\t\t			show this message\n\n
 
     \t make build:\t\t			build Chuck\n
-    \t make install_tools:\t	install additional tools requirements\n\n
+    \t make install-tools:\t	install additional tools requirements\n\n
 
 	\t make test:\t\t			run Chuck unit tests\n
     \t make test-intg-c:\t		run Chuck for the integration tests (Chuck integration tests)\n
