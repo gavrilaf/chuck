@@ -7,9 +7,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"net/http"
+
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
-	"net/http"
 )
 
 var _ = Describe("ScenarioSeeker", func() {
@@ -25,7 +26,7 @@ var _ = Describe("ScenarioSeeker", func() {
 	BeforeEach(func() {
 		log = NewLogger(&cli.MockUi{})
 
-		fs := afero.NewMemMapFs()
+		fs = afero.NewMemMapFs()
 		root = &afero.Afero{Fs: fs}
 	})
 

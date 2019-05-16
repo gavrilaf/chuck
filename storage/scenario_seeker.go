@@ -2,10 +2,11 @@ package storage
 
 import (
 	"fmt"
-	"github.com/spf13/afero"
 	"net/http"
 	"os"
 	. "path"
+
+	"github.com/spf13/afero"
 
 	"chuck/utils"
 )
@@ -28,11 +29,10 @@ func NewScenarioSeeker(fs afero.Fs, log utils.Logger, folder string) (ScenarioSe
 		if !info.IsDir() && info.Name() == IndexFileName {
 			folder, _ := Split(path)
 			scenarioName := Base(folder)
-			
-			if _, ok := seekers[scenarioName], ok {
+
+			if _, ok := seekers[scenarioName]; ok {
 				return fmt.Errorf("Scenario %s (%s) already opened", scenarioName, folder)
 			}
-
 
 			seeker, err := NewSeeker(root, folder)
 			if err != nil {
@@ -41,8 +41,8 @@ func NewScenarioSeeker(fs afero.Fs, log utils.Logger, folder string) (ScenarioSe
 			} else {
 				log.Info("Loaded scenario %s", folder)
 			}
-			
-			seekers[scenarioName] = seeker			
+
+			seekers[scenarioName] = seeker
 		}
 
 		return nil

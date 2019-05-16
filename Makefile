@@ -35,9 +35,10 @@ install-tools:
 	source ext-tools/sc-copy/venv/bin/activate && pip install --upgrade pip && pip install -r ext-tools/test-runner/requirements.txt
 
 test:
-	go test ./utils -v
-	go test ./storage -v
-	go test ./handlers -v
+	go test ./... -v
+	#go test ./utils -v
+	#go test ./storage -v
+	#go test ./handlers -v
 
 test-intg-c:
 	go build
