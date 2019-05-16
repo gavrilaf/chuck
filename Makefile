@@ -36,9 +36,6 @@ install-tools:
 
 test:
 	go test ./... -v
-	#go test ./utils -v
-	#go test ./storage -v
-	#go test ./handlers -v
 
 test-intg-c:
 	go build
