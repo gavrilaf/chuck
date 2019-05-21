@@ -32,7 +32,7 @@ install-tools:
 	python3 -m venv ext-tools/test-runner/venv
 	source ext-tools/test-runner/venv/bin/activate && pip install --upgrade pip && pip install -r ext-tools/test-runner/requirements.txt
 	python3 -m venv ext-tools/sc-copy/venv
-	source ext-tools/sc-copy/venv/bin/activate && pip install --upgrade pip && pip install -r ext-tools/test-runner/requirements.txt
+	source ext-tools/sc-copy/venv/bin/activate && pip install --upgrade pip && pip install -r ext-tools/sc-copy/requirements.txt
 
 test:
 	go test ./utils -v
