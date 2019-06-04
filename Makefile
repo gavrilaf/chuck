@@ -16,7 +16,8 @@ Usage:\n
 	\t make run-dbg:\t\t		run Chuck in the debug mode\n
 	\t make run-intg:\t\t		run Chuck in the integration tests mode without log (verbose=0)\n
 	\t make run-intg-v:\t		run Chuck in the integration tests mode with log (verbose=1, recommended)\n
-	\t make run-intg-rec:\t		run Chuck in the integration tests recording mode\n\n
+	\t make run-intg-rec:\t		run Chuck in the integration tests recording mode\n
+	\t make run-intg-r:\t		run Chuck in the integration tests mode for real devices(not simulator)\n\n
 
     \t make copy-intg-auto:\t	run integration tests copying & cleaning utility (auto mode)\n
 endef
@@ -63,6 +64,9 @@ run-intg-v:
 
 run-intg-rec:
 	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1 -requests=0
+
+run-intg-r:
+	./chuck intg -address=0.0.0.0 -port=8123 -folder=intg -verbose=0
 
 copy-intg-auto: 
 	( \
