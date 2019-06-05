@@ -1,6 +1,8 @@
 module chuck
 
 require (
+	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
+	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/gavrilaf/grouter v0.2.1
 	github.com/mitchellh/cli v1.0.0
 	github.com/onsi/ginkgo v1.8.0

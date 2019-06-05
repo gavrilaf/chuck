@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"gopkg.in/elazarl/goproxy.v1"
 	"net/http"
+
+	"gopkg.in/elazarl/goproxy.v1"
 )
 
 type ProxyHandler interface {
