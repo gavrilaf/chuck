@@ -4,6 +4,7 @@ import (
 	"chuck/utils"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/afero"
 )
@@ -21,23 +22,34 @@ func NewScenarioSeekerNoProxyHandler(config *ScenarioSeekerConfig, fs afero.Fs, 
 	return &scenarioSeekerNoProxyHandler{proxyHandler: handler}, nil
 }
 
-//
-
-func (self *scenarioSeekerNoProxyHandler) Request(req *http.Request) *http.Response {
-	return self.proxyHandler.Request(req, nil)
-}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (self *scenarioSeekerNoProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	sc := ParseActivateScenarioRequest(r)
 	if sc != nil {
 		self.proxyHandler.NonProxyHandler(w, r)
 	} else {
+		url := r.URL
+
+		comps := strings.Split(url.Path, "/")
+
+		url.Host = comps[0]
+		url.Path = strings.Join(comps[1:], "/")
+		url.Scheme = "https"
+
+		r.URL = url
+
 		resp := self.proxyHandler.Request(r, nil)
 
-		w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
-		w.Header().Set("Content-Length", resp.Header.Get("Content-Length"))
+		for k, vv := range resp.Header {
+			for _, v := range vv {
+				w.Header().Add(k, v)
+			}
+		}
+
+		w.WriteHeader(resp.StatusCode)
+
 		io.Copy(w, resp.Body)
 		resp.Body.Close()
-		w.WriteHeader(resp.StatusCode)
 	}
 }
