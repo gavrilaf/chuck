@@ -17,6 +17,7 @@ Usage:\n
 	\t make run-intg:\t\t		run Chuck in the integration tests mode without log (verbose=0)\n
 	\t make run-intg-v:\t		run Chuck in the integration tests mode with log (verbose=1, recommended)\n
 	\t make run-intg-rec:\t		run Chuck in the integration tests recording mode\n\n
+	\t make run-intg-noproxy:\t	run Chuck in the integration tests mode as local server\n\n
 
     \t make copy-intg-auto:\t	run integration tests copying & cleaning utility (auto mode)\n
 endef
