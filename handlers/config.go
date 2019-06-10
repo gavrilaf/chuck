@@ -43,7 +43,7 @@ func (cfg *BaseConfig) AddressAndPort() string {
 }
 
 func (cfg *BaseConfig) String() string {
-	return fmt.Sprintf("Address=%s\nFolder=%s", cfg.AddressAndPort(), cfg.Folder)
+	return fmt.Sprintf("Address=%s Folder=%s", cfg.AddressAndPort(), cfg.Folder)
 }
 
 func (cfg *BaseConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {
@@ -68,7 +68,7 @@ func NewRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder string)
 }
 
 func (cfg *RecorderConfig) String() string {
-	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogAsFocused=%t\nLogRequests=%t",
+	return fmt.Sprintf("%s CreateNewFolder=%t Prevent304=%t LogAsFocused=%t LogRequests=%t",
 		cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogAsFocused, cfg.LogRequests)
 }
 
@@ -117,7 +117,7 @@ func NewScenarioRecorderConfig(flags *flag.FlagSet, args []string, defaultFolder
 }
 
 func (cfg *ScenarioRecorderConfig) String() string {
-	return fmt.Sprintf("%s\nCreateNewFolder=%t\nPrevent304=%t\nLogRequests=%t",
+	return fmt.Sprintf("%s CreateNewFolder=%t Prevent304=%t LogRequests=%t",
 		cfg.BaseConfig.String(), cfg.CreateNewFolder, cfg.Prevent304, cfg.LogRequests)
 }
 
@@ -144,7 +144,7 @@ func NewScenarioSeekerConfig(flags *flag.FlagSet, args []string, defaultFolder s
 }
 
 func (cfg *ScenarioSeekerConfig) String() string {
-	return fmt.Sprintf("%s\nVerbose: %t", cfg.BaseConfig.String(), cfg.Verbose)
+	return fmt.Sprintf("%s Verbose: %t", cfg.BaseConfig.String(), cfg.Verbose)
 }
 
 func (cfg *ScenarioSeekerConfig) InitFlags(flags *flag.FlagSet, defaultFolder string) {

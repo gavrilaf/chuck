@@ -23,6 +23,7 @@ func (self *IntgNoProxyTestCommand) Run(args []string) int {
 
 	self.Log.Info("Running chuck in the integrations test mode (no-proxy mode)")
 	self.Log.Info("%s", cfg.String())
+	self.Log.Info("Chuck outbound ip address %s:%d", utils.GetLocalIP(), cfg.Port)
 
 	handler, err := NewScenarioSeekerNoProxyHandler(cfg, self.Fs, self.Log)
 	if err != nil {
