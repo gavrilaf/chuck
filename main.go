@@ -4,9 +4,10 @@ import (
 	. "chuck/cmds"
 	"chuck/utils"
 
+	"os"
+
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
-	"os"
 )
 
 const AppName = "chuck"
@@ -44,6 +45,12 @@ func main() {
 		},
 		"intg": func() (cli.Command, error) {
 			return &IntgTestCommand{
+				Log: log,
+				Fs:  fs,
+			}, nil
+		},
+		"intg-noproxy": func() (cli.Command, error) {
+			return &IntgNoProxyTestCommand{
 				Log: log,
 				Fs:  fs,
 			}, nil

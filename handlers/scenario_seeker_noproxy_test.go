@@ -15,17 +15,16 @@ import (
 	"github.com/spf13/afero"
 )
 
-var _ = Describe("ScenarioSeeker handler", func() {
+var _ = Describe("ScenarioSeekerNoProxy handler", func() {
 	var (
 		log Logger
 		fs  afero.Fs
 
 		respRecorder *httptest.ResponseRecorder
-		resp         *http.Response
 		emptyHeader  http.Header
 
 		err     error
-		subject ProxyHandler
+		subject http.Handler
 	)
 
 	BeforeEach(func() {
@@ -33,12 +32,12 @@ var _ = Describe("ScenarioSeeker handler", func() {
 		fs = afero.NewMemMapFs()
 	})
 
-	Describe("open scenario seeker", func() {
+	Describe("open scenario sekeer", func() {
 
 		BeforeEach(func() {
 			emptyHeader = make(http.Header)
 
-			resp = MakeResponse2(200, emptyHeader, "")
+			resp := MakeResponse2(200, emptyHeader, "")
 
 			req1, _ := MakeRequest("POST", "https://secure.api.com/login", emptyHeader, nil)
 			req2, _ := MakeRequest("GET", "https://secure.api.com/users", emptyHeader, nil)
@@ -65,7 +64,7 @@ var _ = Describe("ScenarioSeeker handler", func() {
 				},
 			}
 
-			subject, err = NewScenarioSeekerHandler(cfg, fs, log)
+			subject, err = NewScenarioSeekerNoProxyHandler(cfg, fs, log)
 		})
 
 		It("should no error occured", func() {
@@ -78,9 +77,9 @@ var _ = Describe("ScenarioSeeker handler", func() {
 
 		Context("when activate unknown scenario", func() {
 			BeforeEach(func() {
-				req, _ := MakeRequest("PUT", "https://127.0.0.1/scenario/scenario-111/scenario-111-id/no", emptyHeader, nil)
+				req, _ := MakeRequest("PUT", "http://127.0.0.1/scenario/scenario-111/scenario-111-id/no", emptyHeader, nil)
 				respRecorder = httptest.NewRecorder()
-				subject.NonProxyHandler(respRecorder, req)
+				subject.ServeHTTP(respRecorder, req)
 			})
 
 			It("should return 404", func() {
@@ -90,9 +89,9 @@ var _ = Describe("ScenarioSeeker handler", func() {
 
 		Context("when activate existing scenario", func() {
 			BeforeEach(func() {
-				req, _ := MakeRequest("PUT", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no", emptyHeader, nil)
+				req, _ := MakeRequest("PUT", "http://127.0.0.1/scenario/scenario-1/scenario-1-id/no", emptyHeader, nil)
 				respRecorder = httptest.NewRecorder()
-				subject.NonProxyHandler(respRecorder, req)
+				subject.ServeHTTP(respRecorder, req)
 			})
 
 			It("should activate scenario", func() {
@@ -103,26 +102,28 @@ var _ = Describe("ScenarioSeeker handler", func() {
 				BeforeEach(func() {
 					header := make(http.Header)
 					header.Set(ScenarioIdHeader, "scenario-1-id")
-					req, _ := MakeRequest("POST", "https://secure.api.com/login", header, nil)
-					resp = subject.Request(req, nil)
+					req, _ := MakeRequest("POST", "http://127.0.0.1/secure.api.com/login", header, nil)
+
+					respRecorder = httptest.NewRecorder()
+					subject.ServeHTTP(respRecorder, req)
 				})
 
 				It("should return valid response", func() {
-					Expect(resp).ToNot(BeNil())
-					Expect(resp.StatusCode).To(Equal(200))
+					Expect(respRecorder.Code).To(Equal(200))
 					// TODO: Check resp body
 				})
 			})
 
 			Context("when request not from the scenario", func() {
 				BeforeEach(func() {
-					newReq, _ := MakeRequest("POST", "https://secure.api.com/login", emptyHeader, nil)
-					resp = subject.Request(newReq, nil)
+					newReq, _ := MakeRequest("POST", "http://127.0.0.1/secure.api.com/login", emptyHeader, nil)
+
+					respRecorder = httptest.NewRecorder()
+					subject.ServeHTTP(respRecorder, newReq)
 				})
 
 				It("should return 404", func() {
-					Expect(resp).ToNot(BeNil())
-					Expect(resp.StatusCode).To(Equal(404))
+					Expect(respRecorder.Code).To(Equal(404))
 				})
 			})
 		})
