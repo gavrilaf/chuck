@@ -14,12 +14,12 @@ Usage:\n
 
     \t make run-rec:\t\t		run Chuck in the recording mode\n
 	\t make run-dbg:\t\t		run Chuck in the debug mode\n
-	\t make run-intg:\t\t		run Chuck in the integration tests mode without log (verbose=0)\n
-	\t make run-intg-v:\t		run Chuck in the integration tests mode with log (verbose=1, recommended)\n
-	\t make run-intg-rec:\t		run Chuck in the integration tests recording mode\n\n
-	\t make run-intg-noproxy:\t	run Chuck in the integration tests mode as local server\n\n
 
-    \t make copy-intg-auto:\t	run integration tests copying & cleaning utility (auto mode)\n
+	\t make run-intg-rec:\t		run Chuck in the integration tests recording mode\n\n
+	\t make run-intg:\t			run Chuck in the integration tests mode as local server\n\n
+	\t make run-intg-r:\t		run Chuck in the integration tests mode for real devices(not simulator)\n\n
+
+	\t make copy-intg-auto:\t	run integration tests copying & cleaning utility (auto mode)\n
 endef
 export PROJECT_HELP_MSG
 
@@ -55,16 +55,13 @@ run-dbg:
 	./chuck dbg -address=127.0.0.1 -port=8123 -folder=dbg
 
 run-intg:
-	./chuck intg -address=127.0.0.1 -port=8123 -folder=intg -verbose=0
-
-run-intg-v:
-	./chuck intg -address=127.0.0.1 -port=8123 -folder=intg -verbose=1
-
-run-intg-noproxy:
 	./chuck intg-noproxy -address=127.0.0.1 -port=8123 -folder=intg -verbose=1
 
 run-intg-rec:
 	./chuck intg_rec -address=127.0.0.1 -port=8123 -folder=log-intg -new_folder=1 -requests=0
+
+run-intg-r:
+	./chuck intg-noproxy -address=0.0.0.0 -port=8123 -folder=intg -verbose=1
 
 copy-intg-auto: 
 	( \
