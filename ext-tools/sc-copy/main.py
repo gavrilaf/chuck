@@ -1,8 +1,8 @@
 """Chuck scenarios cleaner
 
 Usage:
-  sc_copy.py copy <from> <to> (auto|ask)
-  sc_copy.py new <name> <from> <to>
+  sc_copy.py copy <from> <to>
+  sc_copy.py new <from> <to>
   sc_copy.py (-h | --help)
 
 Options:
@@ -16,26 +16,60 @@ from docopt import docopt
 import colorama
 from colorama import Fore
 
-MODE_AUTO = 1
-MODE_INTERACTIVE = 2
-
 STRIP_CHARS = "\t, "
+
+MODE_AUTO = 1
+MODE_ASK = 2
+MODE_SKIP_ALL = 3
+MODE_COPY_ALL = 4
+
+
+skip_mode = MODE_AUTO
 
 
 def ask_for_skip_line(id, code, method, url):
-    return False
+    global skip_mode
+
+    while True:
+        prompt = Fore.GREEN + "Copy {} : {}, code = {}, id = {}, [(Y)es/(N)o/(S)kip all/(C)opy all]: ".format(method, url, code, id)
+        cp = input(prompt).lower()
+        if cp == "y":
+            return True
+        elif cp == "n":
+            return False
+        elif cp == "s":
+            skip_mode = MODE_SKIP_ALL
+            return False
+        elif cp == "c":
+            skip_mode = MODE_COPY_ALL
+            return True
 
 
-def skip_line(mode, src_path, id, code, method, url):
-    return check_skip_by_code(src_path, id, code)
+def is_skip_line(src_path, id, code, method, url):
+    if skip_mode == MODE_AUTO:
+        return check_skip_by_code(src_path, id, code)
+    elif skip_mode == MODE_ASK:
+        return not ask_for_skip_line(id, code, method, url)
+    elif skip_mode == MODE_SKIP_ALL:
+        return True
+    elif skip_mode == MODE_COPY_ALL:
+        return False
+    else:
+        print("Unknown code")
+        exit(1)
 
 
 def copy_scenario(mode, src_path, dest_path, name):
     print(Fore.GREEN + "\nCopy scenario {}".format(name))
 
+    global skip_mode
+    skip_mode = mode
+
     with open(os.path.join(src_path, 'index.txt'), 'r') as f:
         reader = csv.reader(f, delimiter = '\t')
         index = list(reader)
+
+    # TODO: Add support for the duplicates
 
     result = []
     ids_map = {}
@@ -47,7 +81,7 @@ def copy_scenario(mode, src_path, dest_path, name):
         method = line[3].strip(STRIP_CHARS)
         url = line[4].strip(STRIP_CHARS)
 
-        if skip_line(mode, src_path, id, code, method, url):
+        if is_skip_line(src_path, id, code, method, url):
             print(Fore.YELLOW + "Skip line {}, {}, {} : {}".format(line_indx, code, method, url))
             line_indx += 1
             continue
@@ -74,26 +108,45 @@ def copy_scenario(mode, src_path, dest_path, name):
             f.write(line)
 
     for old_id, new_id in ids_map.items():
-        copytree(os.path.join(src_path, old_id), os.path.join(dest_path, new_id))
+        copy_stub(os.path.join(src_path, old_id), os.path.join(dest_path, new_id))
 
 
-def copy_scenarios(mode, src_path, dest_path):
+def copy_scenarios(src_path, dest_path):
     print(Fore.GREEN + "Copy scenarios from {} to {}\n".format(src_path, dest_path))
     for dirName, subdirList, fileList in os.walk(src_path):
         if "index.txt" in fileList:
             subdirList.clear()
             sc_name = os.path.basename(dirName)
-            copy_scenario(mode, dirName, dest_path, sc_name)
+            copy_scenario(MODE_AUTO, dirName, dest_path, sc_name)
+
+
+def create_scenario(src_path, dest_path):
+    dirs = os.listdir(src_path)
+    dirs.remove(".DS_Store")
+    if len(dirs) == 1:
+        log_name = dirs[0]
+    else:
+        print(Fore.GREEN + "Logs {}\n", ", ".join(dirs))
+        log_name = input(Fore.GREEN + "Enter log folder: ")
+
+    scenario_name = input(Fore.GREEN + "Enter new scenario name: ")
+    src_path = os.path.join(src_path, log_name)
+
+    print(Fore.GREEN + "Copy new scenario {} based on {} to {}\n".format(scenario_name, src_path, dest_path))
+    copy_scenario(MODE_ASK, src_path, dest_path, scenario_name)
 
 
 def main(args):
     if args["copy"]:
-        mode = MODE_INTERACTIVE if args["ask"] else MODE_AUTO
         src = args["<from>"]
         dest = args["<to>"]
-        copy_scenarios(mode, src, dest)
+        copy_scenarios(src, dest)
+    elif args["new"]:
+        src = args["<from>"]
+        dest = args["<to>"]
+        create_scenario(src, dest)
     else:
-        print(Fore.RED + "Doesn't supported yet")
+        print(Fore.RED + "Unknown mode")
 
 
 if __name__ == "__main__":

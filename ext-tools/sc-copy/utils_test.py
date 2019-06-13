@@ -3,6 +3,20 @@ from utils import *
 
 
 class UtilsTestCase(unittest.TestCase):
+    def test_clear_headers(self):
+        cases = [ ({"Connection": ["keep-alive"], "Content-Length": ["99"]},
+                   {}),
+                  ({"connection": ["keep-alive"], "Content-length": ["99"], "Content-Type": ["application/json"]},
+                   {"Content-Type": ["application/json"]}),
+                  ]
+
+        for cs in cases:
+            cleared = clear_headers(cs[0])
+            expected = cs[1]
+
+            self.assertEqual(expected, cleared)
+
+
     def test_clear_url(self):
         cases = [("https://test.net/guest?format=json&apikey=1234", "https://test.net/guest?format=json&apikey=*"),
                  ("https://test.net/guest?apikey=1234", "https://test.net/guest?apikey=*"),
