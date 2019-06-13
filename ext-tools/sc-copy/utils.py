@@ -2,6 +2,7 @@ import os
 import os.path
 import shutil
 import re
+import json
 
 re_apikey = re.compile(r"apikey=([^&#]*)", re.IGNORECASE)
 re_code = re.compile(r"code=([^&#]*)", re.IGNORECASE)
@@ -12,22 +13,30 @@ re_date_to = re.compile(r"to=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
 
 aadhi_prefix = "aadhi.cma.r53.nordstrom.net:443/"
 
+headers_to_remove = ["connection", "content-length"]
+
 NOT_FOUND_SKIP_RULES = [
     "\"message\": \"Not Found\",",
     "\"status\": \"404\""
 ]
 
-def copytree(src, dst):
-    if not os.path.exists(dst):
-        os.makedirs(dst)
+
+def clear_headers(h):
+    return {k: v for k, v in h.items() if k.lower() not in headers_to_remove}
+
+
+def copy_stub(src, dst):
+    os.makedirs(dst)
     for item in os.listdir(src):
         s = os.path.join(src, item)
         d = os.path.join(dst, item)
-        if os.path.isdir(s):
-            copytree(s, d)
-        else:
-            if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
-                shutil.copy2(s, d)
+        if "resp_body.json" == item:
+            shutil.copy2(s, d)
+        elif "resp_header.json" == item:
+            with open(s) as sfp, open(d, "w+") as dfp:
+                h = json.load(sfp)
+                h = clear_headers(h)
+                json.dump(h, dfp, indent=2)
 
 
 def read_content(src_path, id):

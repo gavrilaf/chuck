@@ -19,7 +19,8 @@ Usage:\n
 	\t make run-intg:\t			run Chuck in the integration tests mode as local server\n\n
 	\t make run-intg-r:\t		run Chuck in the integration tests mode for real devices(not simulator)\n\n
 
-	\t make copy-intg-auto:\t	run integration tests copying & cleaning utility (auto mode)\n
+	\t make copy-intg-auto:\t		run integration tests copying & cleaning utility (copy scenarious mode)\n
+	\t make copy-intg-man:\t		run integration tests copying & cleaning utility (create scenario mode)\n
 endef
 export PROJECT_HELP_MSG
 
@@ -66,7 +67,13 @@ run-intg-r:
 copy-intg-auto: 
 	( \
 		source ext-tools/sc-copy/venv/bin/activate; \
-		python ext-tools/sc-copy/main.py copy log-intg sc-cleaned auto; \
+		python ext-tools/sc-copy/main.py copy log-intg sc-cleaned; \
+	)
+
+copy-intg-man: 
+	( \
+		source ext-tools/sc-copy/venv/bin/activate; \
+		python ext-tools/sc-copy/main.py new log sc-cleaned; \
 	)
 
 	
