@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/spf13/afero"
 	"gopkg.in/elazarl/goproxy.v1"
-	"net/http"
 
 	"chuck/storage"
 	"chuck/utils"
@@ -80,7 +81,7 @@ func (self *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, 
 
 	if self.seeker.IsScenarioExists(sc.Scenario) {
 		self.log.Info("Activated scenario %s with id %s", sc.Scenario, sc.Id)
-		self.scenarios[sc.Id] = sc.Scenario
+		self.scenarios[sc.Id] = sc.Scenario // TODO: fatal error: concurrent map writes
 		w.WriteHeader(200)
 		return
 	} else {

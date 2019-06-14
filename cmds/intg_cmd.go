@@ -4,8 +4,9 @@ import (
 	. "chuck/handlers"
 	"chuck/utils"
 	"flag"
-	"github.com/spf13/afero"
 	"strings"
+
+	"github.com/spf13/afero"
 )
 
 type IntgTestCommand struct {
@@ -20,8 +21,9 @@ func (self *IntgTestCommand) Run(args []string) int {
 		return 1
 	}
 
-	self.Log.Info("Running chuck in the integrations test mode")
+	self.Log.Info("Running chuck in the integrations test mode (proxy mode)")
 	self.Log.Info("%s", cfg.String())
+	self.Log.Info("Chuck outbound ip address %s:%d", utils.GetLocalIP(), cfg.Port)
 
 	proxy, err := CreateProxy()
 	if err != nil {

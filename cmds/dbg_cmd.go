@@ -4,8 +4,9 @@ import (
 	. "chuck/handlers"
 	"chuck/utils"
 	"flag"
-	"github.com/spf13/afero"
 	"strings"
+
+	"github.com/spf13/afero"
 )
 
 type DebugCommand struct {
@@ -22,6 +23,7 @@ func (self *DebugCommand) Run(args []string) int {
 
 	self.Log.Info("Running chuck in the debug mode")
 	self.Log.Info("%s", cfg.String())
+	self.Log.Info("Chuck outbound ip address %s:%d", utils.GetLocalIP(), cfg.Port)
 
 	proxy, err := CreateProxy()
 	if err != nil {
