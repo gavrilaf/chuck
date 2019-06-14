@@ -123,6 +123,6 @@ func (self *seekerImpl) readBody(fname string) (io.ReadCloser, error) {
 
 func (self *seekerImpl) filterHeader(h http.Header) http.Header {
 	h.Del("Connection")
-	h.Del("Content-Length")
+	h.Del("Content-Length") // TODO: Refactoring
 	return h
 }
