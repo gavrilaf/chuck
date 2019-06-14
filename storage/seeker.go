@@ -3,11 +3,12 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/spf13/afero"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/spf13/afero"
 
 	"chuck/utils"
 )
@@ -17,6 +18,9 @@ type seekerImpl struct {
 	index Index
 }
 
+// Create new Seeker handler
+//	fs - filesystem abstraction
+//	folder - root folder for requests/responses log. Must contain index.txt file
 func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
@@ -53,6 +57,8 @@ func (self *seekerImpl) Look(method string, url string) (*http.Response, error) 
 	if err != nil {
 		return nil, fmt.Errorf("Read header error for %s: %v", item.Folder, err)
 	}
+
+	header = self.filterHeader(header)
 
 	body, err := self.readBody(item.Folder + "/resp_body.json")
 	if err != nil {
@@ -113,4 +119,10 @@ func (self *seekerImpl) readBody(fname string) (io.ReadCloser, error) {
 	}
 
 	return ioutil.NopCloser(bytes.NewReader(buf)), nil
+}
+
+func (self *seekerImpl) filterHeader(h http.Header) http.Header {
+	h.Del("Connection")
+	h.Del("Content-Length")
+	return h
 }

@@ -1,12 +1,13 @@
 package storage
 
 import (
-	"github.com/spf13/afero"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"sync"
+
+	"github.com/spf13/afero"
 
 	"chuck/utils"
 )
@@ -23,6 +24,13 @@ type recorderImpl struct {
 	log         utils.Logger
 }
 
+// Create new Recorder handler
+//	fs - filesystem abstraction
+//	logger -
+//	folder - root folder for logs
+//	createNewFolder - create new unique folder inside root, if false and root folder already contains index, index will be opened in the append mode
+//	onlyNew - record only unique requests (skip repeated)
+//	logRequests - record requests body & header if true
 func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder bool, onlyNew bool, logRequests bool) (Recorder, error) {
 	name, path, err := utils.PrepareStorageFolder(fs, folder, createNewFolder)
 	if err != nil {
@@ -150,10 +158,10 @@ func (self *recorderImpl) checkAndRecordRequest(req *http.Request, session int64
 	defer self.mux.Unlock()
 
 	if self.index != nil {
-		if self.index.Find(method, url) != nil {
+		if self.index.Find(method, url) != nil { // index != nil means onlyNew == true, so check for repeated request
 			return nil, nil
 		} else {
-			// add error handling
+			// TODO: add error handling
 			self.index.Add(IndexItem{
 				Focused: false,
 				Method:  method,

@@ -7,9 +7,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"net/http"
+
 	"github.com/mitchellh/cli"
 	"github.com/spf13/afero"
-	"net/http"
 )
 
 var _ = Describe("Seeker", func() {
@@ -42,17 +43,14 @@ var _ = Describe("Seeker", func() {
 	})
 
 	Context("Open Seeker on folder with index", func() {
-		var (
-			header   http.Header
-			respBody string
-		)
-
 		BeforeEach(func() {
-			header = make(http.Header)
+			header := make(http.Header)
 			header.Set("Content-Type", "application/json")
 			header.Set("Access-Token", "Bearer-12234")
+			header.Set("Connection", "keep-alive")
+			header.Set("Content-Length", "100")
 
-			respBody = `{"colors": []}`
+			respBody := `{"colors": []}`
 
 			req1, _ := MakeRequest("POST", "https://secure.api.com/login", header, nil)
 			req2, _ := MakeRequest("GET", "https://secure.api.com/users/*", header, nil)
@@ -88,7 +86,7 @@ var _ = Describe("Seeker", func() {
 			Expect(subject).ToNot(BeNil())
 		})
 
-		It("should contains two items", func() {
+		It("should contain two items", func() {
 			Expect(subject.Count()).To(Equal(2))
 		})
 
@@ -102,35 +100,40 @@ var _ = Describe("Seeker", func() {
 					resp, _ = subject.Look("GET", "https://secure.api.com/users/678/off")
 				})
 
-				It("should return request", func() {
+				It("should return response", func() {
 					Expect(resp).ToNot(BeNil())
 				})
 
-				It("should response has correct headers", func() {
-					Expect(resp.Header).To(Equal(header))
+				It("should have filtered headers", func() {
+					expected := make(http.Header)
+					expected.Set("Content-Type", "application/json")
+					expected.Set("Access-Token", "Bearer-12234")
+
+					Expect(resp.Header).To(Equal(expected))
 				})
 
-				It("should response has correct body", func() {
+				It("should have correct body", func() {
 					expected := []byte("{\n\t\"colors\": []\n}\n")
 					buf, _ := DumpRespBody(resp)
+
 					Expect(buf).To(Equal(expected))
 				})
 			})
 
-			Context("when request/response has empty header & body", func() {
+			Context("when response has empty header & body", func() {
 				BeforeEach(func() {
 					resp, _ = subject.Look("GET", "www.google.com")
 				})
 
-				It("should return request", func() {
+				It("should return response", func() {
 					Expect(resp).ToNot(BeNil())
 				})
 
-				It("should response has empty header", func() {
+				It("should have empty header", func() {
 					Expect(len(resp.Header)).To(BeZero())
 				})
 
-				It("should response has empty body", func() {
+				It("should have empty body", func() {
 					buf, _ := DumpRespBody(resp)
 					Expect(len(buf)).To(BeZero())
 				})
