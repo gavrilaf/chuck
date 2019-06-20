@@ -11,7 +11,7 @@ re_near_store_id = re.compile(r"nearStoreNumbers=([^&#]*)", re.IGNORECASE)
 re_date_from = re.compile(r"from=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
 re_date_to = re.compile(r"to=(\d{4}-\d{1,2}-\d{1,2})", re.IGNORECASE)
 
-aadhi_prefix = "aadhi.cma.r53.nordstrom.net:443/"
+aadhi_prefix_regex = re.compile(r"aadhi.cma.r53.nordstrom.net(:443)?/", re.IGNORECASE)
 
 headers_to_remove = ["connection", "content-length"]
 
@@ -59,7 +59,7 @@ def check_skip_by_code(src_path, id, code):
 
 
 def clear_url(url):
-    url = url.replace(aadhi_prefix, "")
+    url =  aadhi_prefix_regex.sub("", url)
 
     url = re.sub(re_apikey, "apikey=*", url)
     url = re.sub(re_code, "code=*", url)
