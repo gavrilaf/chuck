@@ -39,35 +39,6 @@ var _ = Describe("Helpers", func() {
 		})
 	})
 
-	Describe("Parse activate scenario url", func() {
-		var (
-			subj *ActivateScenario
-		)
-
-		Context("when url recognized as scenario url", func() {
-			BeforeEach(func() {
-				req := createRequest("GET", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no")
-				subj = ParseActivateScenarioRequest(req)
-			})
-
-			It("should return scenario name & id", func() {
-				sc := &ActivateScenario{Scenario: "scenario-1", Id: "scenario-1-id"}
-				Expect(subj).To(Equal(sc))
-			})
-		})
-
-		Context("when url is not recognized as scenario url", func() {
-			BeforeEach(func() {
-				req := createRequest("GET", "www.google.com")
-				subj = ParseActivateScenarioRequest(req)
-			})
-
-			It("should return nil", func() {
-				Expect(subj).To(BeNil())
-			})
-		})
-	})
-
 	Describe("Get scenario id", func() {
 		var (
 			req *http.Request
