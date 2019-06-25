@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/spf13/afero"
@@ -61,17 +62,25 @@ func (self *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.Proxy
 	return utils.MakeResponse2(404, make(http.Header), "")
 }
 
-func (p *scenarioSeekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {
+func (self *scenarioSeekerHandler) Response(resp *http.Response, ctx *goproxy.ProxyCtx) {}
 
-}
-
-func (p *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
-	p.tryToActivateScenario(w, req)
+func (self *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *http.Request) {
+	rt := DetectServiceRequest(req)
+	switch rt {
+	case ServiceReq_ActivateScenario:
+		self.activateScenario(w, req)
+	case ServiceReq_ExecuteScript:
+		self.executeScript(w, req)
+	default:
+		fmt.Printf("Unsupported non proxy request: %v", req.URL.String())
+		self.log.Error("Unsupported non proxy request: %v", req.URL.String())
+		w.WriteHeader(404)
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func (self *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, req *http.Request) {
+func (self *scenarioSeekerHandler) activateScenario(w http.ResponseWriter, req *http.Request) {
 	sc := ParseActivateScenarioRequest(req)
 	if sc == nil {
 		self.log.Error("Wrong activate scenario request: %v", req.URL.String())
@@ -83,10 +92,19 @@ func (self *scenarioSeekerHandler) tryToActivateScenario(w http.ResponseWriter, 
 		self.log.Info("Activated scenario %s with id %s", sc.Scenario, sc.Id)
 		self.scenarios[sc.Id] = sc.Scenario // TODO: fatal error: concurrent map writes
 		w.WriteHeader(200)
-		return
 	} else {
 		self.log.Error("Scenario %s not found", sc.Scenario)
+		w.WriteHeader(404)
+	}
+}
+
+func (self *scenarioSeekerHandler) executeScript(w http.ResponseWriter, req *http.Request) {
+	sc := ParseExecuteScriptRequest(req)
+	if sc == nil {
+		self.log.Error("Wrong execute script request: %v", req.URL.String())
+		w.WriteHeader(404)
+		return
 	}
 
-	w.WriteHeader(404)
+	utils.ExecuteCmd(sc.Name, sc.Env, self.log)
 }

@@ -28,7 +28,7 @@ var _ = Describe("Service calls detector", func() {
 
 		Context("when url recognized as activate scenario url", func() {
 			BeforeEach(func() {
-				req := createRequest("POST", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no")
+				req := createRequest("PUT", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no")
 				reqType = DetectServiceRequest(req)
 			})
 
@@ -39,7 +39,7 @@ var _ = Describe("Service calls detector", func() {
 
 		Context("when url recognized as run script url", func() {
 			BeforeEach(func() {
-				req := createRequest("POST", "https://127.0.0.1/script/delete-app/run")
+				req := createRequest("PUT", "https://127.0.0.1/script/delete-app/run")
 				reqType = DetectServiceRequest(req)
 			})
 
@@ -50,7 +50,7 @@ var _ = Describe("Service calls detector", func() {
 
 		Context("when url is not recognized as service url", func() {
 			BeforeEach(func() {
-				req := createRequest("POST", "https://127.0.0.1/auth/v1/verifier=2738438")
+				req := createRequest("PUT", "https://127.0.0.1/auth/v1/verifier=2738438")
 				reqType = DetectServiceRequest(req)
 			})
 
@@ -67,7 +67,7 @@ var _ = Describe("Service calls detector", func() {
 
 		Context("when url recognized as scenario url", func() {
 			BeforeEach(func() {
-				req := createRequest("GET", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no")
+				req := createRequest("PUT", "https://127.0.0.1/scenario/scenario-1/scenario-1-id/no")
 				subj = ParseActivateScenarioRequest(req)
 			})
 
