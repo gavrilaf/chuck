@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/spf13/afero"
 	"gopkg.in/elazarl/goproxy.v1"
@@ -15,6 +15,7 @@ type scenarioSeekerHandler struct {
 	seeker    storage.ScenarioSeeker
 	verbose   bool
 	log       utils.Logger
+	lock      *sync.Mutex
 	scenarios map[string]string
 }
 
@@ -28,6 +29,7 @@ func NewScenarioSeekerHandler(config *ScenarioSeekerConfig, fs afero.Fs, log uti
 		seeker:    seeker,
 		verbose:   config.Verbose,
 		log:       log,
+		lock:      &sync.Mutex{},
 		scenarios: make(map[string]string),
 	}, nil
 }
@@ -45,11 +47,11 @@ func (self *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.Proxy
 				self.log.Error("Searching response error %v, %s, %s : %s, (%v)", id, scenario, method, url, err)
 			} else if resp == nil {
 				if self.verbose {
-					self.log.Warn("Saved response isn't found for client %v, scenario %s, %s : %s", id, scenario, method, url)
+					self.log.Warn("Stub isn't found %s : %s, scenario: %s, client: %s", method, url, scenario, id)
 				}
 			} else {
 				if self.verbose {
-					self.log.Info("Stubbed response for client %v, scenario %s, request %s : %s", id, scenario, method, url)
+					self.log.Info("Stub %s : %s, scenario: %s, client: %s", method, url, scenario, id)
 				}
 				return resp
 			}
@@ -72,7 +74,6 @@ func (self *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *h
 	case ServiceReq_ExecuteScript:
 		self.executeScript(w, req)
 	default:
-		fmt.Printf("Unsupported non proxy request: %v", req.URL.String())
 		self.log.Error("Unsupported non proxy request: %v", req.URL.String())
 		w.WriteHeader(404)
 	}
@@ -87,6 +88,9 @@ func (self *scenarioSeekerHandler) activateScenario(w http.ResponseWriter, req *
 		w.WriteHeader(404)
 		return
 	}
+
+	self.lock.Lock()
+	defer self.lock.Unlock()
 
 	if self.seeker.IsScenarioExists(sc.Scenario) {
 		self.log.Info("Activated scenario %s with id %s", sc.Scenario, sc.Id)
