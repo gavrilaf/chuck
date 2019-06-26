@@ -94,7 +94,7 @@ func (self *scenarioSeekerHandler) activateScenario(w http.ResponseWriter, req *
 
 	if self.seeker.IsScenarioExists(sc.Scenario) {
 		self.log.Info("Activated scenario %s with id %s", sc.Scenario, sc.Id)
-		self.scenarios[sc.Id] = sc.Scenario // TODO: fatal error: concurrent map writes
+		self.scenarios[sc.Id] = sc.Scenario
 		w.WriteHeader(200)
 	} else {
 		self.log.Error("Scenario %s not found", sc.Scenario)
