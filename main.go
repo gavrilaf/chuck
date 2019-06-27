@@ -11,7 +11,7 @@ import (
 )
 
 const AppName = "chuck"
-const Version = "0.1.3"
+const Version = "0.2.0"
 
 func main() {
 	ui := &cli.ColoredUi{

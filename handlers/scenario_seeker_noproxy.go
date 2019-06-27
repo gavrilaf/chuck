@@ -25,31 +25,38 @@ func NewScenarioSeekerNoProxyHandler(config *ScenarioSeekerConfig, fs afero.Fs, 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func (self *scenarioSeekerNoProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	sc := ParseActivateScenarioRequest(r)
-	if sc != nil {
+	rt := DetectServiceRequest(r)
+	if rt != ServiceReq_None {
 		self.proxyHandler.NonProxyHandler(w, r)
 	} else {
-		url := r.URL
-
-		comps := strings.Split(url.Path, "/")
-
-		url.Host = comps[0]
-		url.Path = strings.Join(comps[1:], "/")
-		url.Scheme = "https"
-
-		r.URL = url
-
-		resp := self.proxyHandler.Request(r, nil)
-
-		for k, vv := range resp.Header {
-			for _, v := range vv {
-				w.Header().Add(k, v)
-			}
-		}
-
-		w.WriteHeader(resp.StatusCode)
-
-		io.Copy(w, resp.Body)
-		resp.Body.Close()
+		self.serverStubRequest(w, r)
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func (self *scenarioSeekerNoProxyHandler) serverStubRequest(w http.ResponseWriter, r *http.Request) {
+	url := r.URL
+	comps := strings.Split(url.Path, "/")
+
+	// replace Chuck host on 'real' host. 'http://127.0.0.1/my.real.host/v1/profile' -> 'http://my.real.host/v1/profile'
+	url.Host = comps[0]
+	url.Path = strings.Join(comps[1:], "/")
+	url.Scheme = "https"
+	r.URL = url
+
+	// handle request with standard proxy handler
+	resp := self.proxyHandler.Request(r, nil)
+
+	// copy result
+	for k, vv := range resp.Header {
+		for _, v := range vv {
+			w.Header().Add(k, v)
+		}
+	}
+
+	w.WriteHeader(resp.StatusCode)
+
+	io.Copy(w, resp.Body)
+	resp.Body.Close()
 }

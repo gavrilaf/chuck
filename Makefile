@@ -12,6 +12,8 @@ Usage:\n
     \t make test-intg-c:\t		run Chuck for the integration tests (Chuck integration tests)\n
     \t make test-intg-r:\t		run Chuck integration tests (exec make test-intg-c before)\n\n
 
+	\t make version:\t\t		print Chuck version\n
+
     \t make run-rec:\t\t		run Chuck in the recording mode\n
 	\t make run-dbg:\t\t		run Chuck in the debug mode\n
 
@@ -48,6 +50,9 @@ test-intg-r:
 		source ext-tools/test-runner/venv/bin/activate; \
 		python ext-tools/test-runner/test_chuck.py; \
 	)
+
+version:
+	./chuck --version
 
 run-rec:
 	./chuck rec -address=127.0.0.1 -port=8123 -folder=log -prevent_304=1 -new_folder=1 -focused=0 -requests=1
