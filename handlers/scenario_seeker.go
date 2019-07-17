@@ -12,6 +12,8 @@ import (
 )
 
 type scenarioSeekerHandler struct {
+	fs        afero.Fs
+	folder    string
 	seeker    storage.ScenarioSeeker
 	verbose   bool
 	log       utils.Logger
@@ -26,6 +28,8 @@ func NewScenarioSeekerHandler(config *ScenarioSeekerConfig, fs afero.Fs, log uti
 	}
 
 	return &scenarioSeekerHandler{
+		fs:        fs,
+		folder:    config.Folder,
 		seeker:    seeker,
 		verbose:   config.Verbose,
 		log:       log,
@@ -38,6 +42,9 @@ func (self *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.Proxy
 	method := req.Method
 	url := req.URL.String()
 	id := GetScenarioId(req)
+
+	self.lock.Lock()
+	defer self.lock.Unlock()
 
 	if len(id) != 0 {
 		scenario, ok := self.scenarios[id]
@@ -56,7 +63,7 @@ func (self *scenarioSeekerHandler) Request(req *http.Request, ctx *goproxy.Proxy
 				return resp
 			}
 		} else {
-			self.log.Error("Scenario isn't found for id %v, %s : %s", id, method, url)
+			self.log.Error("Scenario isn't activated for id %v, %s : %s", id, method, url)
 		}
 	} else {
 		self.log.Error("Integration test header not found for %s : %s", method, url)
@@ -73,6 +80,8 @@ func (self *scenarioSeekerHandler) NonProxyHandler(w http.ResponseWriter, req *h
 		self.activateScenario(w, req)
 	case ServiceReq_ExecuteScript:
 		self.executeScript(w, req)
+	case ServiceReq_ReloadScenarios:
+		self.reloadScenarios(w)
 	default:
 		self.log.Error("Unsupported non proxy request: %v", req.URL.String())
 		w.WriteHeader(404)
@@ -111,4 +120,23 @@ func (self *scenarioSeekerHandler) executeScript(w http.ResponseWriter, req *htt
 	}
 
 	utils.ExecuteCmd(sc.Name, sc.Env, self.log)
+	w.WriteHeader(200)
+}
+
+func (self *scenarioSeekerHandler) reloadScenarios(w http.ResponseWriter) {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
+	newSeeker, err := storage.NewScenarioSeeker(self.fs, self.log, self.folder)
+	if err != nil {
+		self.log.Error("Couldn't reload scenarios: %v", err)
+		w.WriteHeader(500)
+		return
+	}
+
+	self.seeker = newSeeker
+	self.scenarios = make(map[string]string)
+
+	self.log.Info("Scenarios reloaded sucessfully")
+	w.WriteHeader(200)
 }
