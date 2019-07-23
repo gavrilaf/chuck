@@ -98,7 +98,7 @@ var _ = Describe("Index", func() {
 
 			Context("when focused is false", func() {
 				BeforeEach(func() {
-					subject, err = LoadIndex2(root, IndexFileName, false)
+					subject, err = LoadIndex2(root, IndexFileName, false, nil)
 				})
 
 				It("should return nil error", func() {
@@ -117,7 +117,7 @@ var _ = Describe("Index", func() {
 
 			Context("when focused is true", func() {
 				BeforeEach(func() {
-					subject, err = LoadIndex2(root, IndexFileName, true)
+					subject, err = LoadIndex2(root, IndexFileName, true, nil)
 				})
 
 				It("should contain 1 item", func() {

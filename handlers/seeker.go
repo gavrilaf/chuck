@@ -18,7 +18,7 @@ type seekerHandler struct {
 }
 
 func NewSeekerHandler(config *SeekerConfig, fs afero.Fs, log utils.Logger) (ProxyHandler, error) {
-	seeker, err := storage.NewSeeker(fs, config.Folder)
+	seeker, err := storage.NewSeeker(fs, config.Folder, log)
 	if err != nil {
 		return nil, err
 	}

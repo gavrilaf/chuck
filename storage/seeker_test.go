@@ -29,7 +29,7 @@ var _ = Describe("Seeker", func() {
 
 	Context("Open Seeker on nonexisting folder", func() {
 		BeforeEach(func() {
-			subject, err = NewSeeker(fs, "test-123")
+			subject, err = NewSeeker(fs, "test-123", nil)
 		})
 
 		It("should error occurred", func() {
@@ -75,7 +75,7 @@ var _ = Describe("Seeker", func() {
 			recorder.RecordRequest(reqEmpty, 3)
 			recorder.RecordResponse(respEmpty, 3)
 
-			subject, err = NewSeeker(fs, "test")
+			subject, err = NewSeeker(fs, "test", nil)
 		})
 
 		It("should not error occurred", func() {

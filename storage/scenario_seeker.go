@@ -34,7 +34,7 @@ func NewScenarioSeeker(fs afero.Fs, log utils.Logger, folder string) (ScenarioSe
 				return fmt.Errorf("Scenario %s (%s) already opened", scenarioName, folder)
 			}
 
-			seeker, err := NewSeeker(root, folder)
+			seeker, err := NewSeeker(root, folder, log)
 			if err != nil {
 				log.Error("Couldn't load index by path %s, %v", path, err)
 				return err
