@@ -69,17 +69,25 @@ def copy_scenario(mode, src_path, dest_path, name):
         reader = csv.reader(f, delimiter = '\t')
         index = list(reader)
 
-    # TODO: Add support for the duplicates
-
     result = []
     ids_map = {}
     line_indx = 0
     id_indx = 1
+    processed = set()
+
     for line in index:
         code = line[1].strip(STRIP_CHARS)
         id = line[2].strip(STRIP_CHARS)
         method = line[3].strip(STRIP_CHARS)
         url = line[4].strip(STRIP_CHARS)
+
+        key = method + url
+        if key in processed:
+            print(Fore.YELLOW + "Duplicated line {}, {}, {} : {}".format(line_indx, code, method, url))
+            line_indx += 1
+            continue
+        else:
+            processed.add(key)
 
         if is_skip_line(src_path, id, code, method, url):
             print(Fore.YELLOW + "Skip line {}, {}, {} : {}".format(line_indx, code, method, url))
