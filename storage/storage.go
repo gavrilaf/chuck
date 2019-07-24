@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	ErrScenarioRecorderNotActivated = fmt.Errorf("Scenario recorder not activated")
+	ErrScenarioRecorderNotActivated = fmt.Errorf("Scenario recorder not activated (check intergation tests helper code)")
 	ErrRequestNotFound              = fmt.Errorf("Request not found")
 )
 
