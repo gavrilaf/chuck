@@ -21,7 +21,7 @@ type seekerImpl struct {
 // Create new Seeker handler
 //	fs - filesystem abstraction
 //	folder - root folder for requests/responses log. Must contain index.txt file
-func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
+func NewSeeker(fs afero.Fs, folder string, log utils.Logger) (Seeker, error) {
 	folder = strings.Trim(folder, " \\/")
 	logDirExists, _ := afero.DirExists(fs, folder)
 	if !logDirExists {
@@ -30,7 +30,7 @@ func NewSeeker(fs afero.Fs, folder string) (Seeker, error) {
 
 	root := &afero.Afero{Fs: afero.NewBasePathFs(fs, folder)}
 
-	index, err := LoadIndex2(root, IndexFileName, true)
+	index, err := LoadIndex2(root, IndexFileName, true, log)
 	if err != nil {
 		return nil, err
 	}

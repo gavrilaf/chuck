@@ -46,7 +46,7 @@ func NewRecorder(fs afero.Fs, log utils.Logger, folder string, createNewFolder b
 	counter := 1
 	var index Index
 	if onlyNew {
-		index, err = LoadIndex2(root, IndexFileName, false)
+		index, err = LoadIndex2(root, IndexFileName, false, nil)
 		if err != nil {
 			return nil, err
 		}

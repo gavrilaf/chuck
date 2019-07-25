@@ -48,6 +48,17 @@ var _ = Describe("Service calls detector", func() {
 			})
 		})
 
+		Context("when url recognized as reload scenarios", func() {
+			BeforeEach(func() {
+				req := createRequest("PUT", "https://127.0.0.1/scenarios/reload")
+				reqType = DetectServiceRequest(req)
+			})
+
+			It("should return activate scenario type", func() {
+				Expect(reqType).To(Equal(ServiceReq_ReloadScenarios))
+			})
+		})
+
 		Context("when url is not recognized as service url", func() {
 			BeforeEach(func() {
 				req := createRequest("PUT", "https://127.0.0.1/auth/v1/verifier=2738438")

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/gavrilaf/grouter"
 	"github.com/spf13/afero"
+
+	"chuck/utils"
 )
 
 type Index interface {
@@ -23,7 +25,7 @@ func NewIndex() Index {
 
 // Index creation
 
-func LoadIndex(fp afero.File, focused bool) (Index, error) {
+func LoadIndex(fp afero.File, focused bool, log utils.Logger) (Index, error) {
 	index := NewIndex()
 
 	scanner := bufio.NewScanner(fp)
@@ -38,6 +40,12 @@ func LoadIndex(fp afero.File, focused bool) (Index, error) {
 		if !focused || item.Focused {
 			err := index.Add(*item)
 			if err != nil {
+				if err == grouter.ErrAlreadyAdded {
+					if log != nil {
+						log.Error("File %s, line %d. Route already added", fp.Name(), lineIndex)
+					}
+					continue
+				}
 				return nil, err
 			}
 		}
@@ -46,14 +54,14 @@ func LoadIndex(fp afero.File, focused bool) (Index, error) {
 	return index, nil
 }
 
-func LoadIndex2(fs afero.Fs, file string, focused bool) (Index, error) {
+func LoadIndex2(fs afero.Fs, file string, focused bool, log utils.Logger) (Index, error) {
 	fp, err := fs.Open(file)
 	if err != nil {
 		return nil, err
 	}
 	defer fp.Close()
 
-	return LoadIndex(fp, focused)
+	return LoadIndex(fp, focused, log)
 }
 
 // indexImpl

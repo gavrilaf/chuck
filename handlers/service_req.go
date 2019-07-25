@@ -8,14 +8,16 @@ import (
 )
 
 var (
-	ActivateScenarioRegx = regexp.MustCompile("/scenario/(.*)/(.*)/no")
-	ExecuteScriptRegx    = regexp.MustCompile("/script/(.*)/run")
+	activateScenarioRegx = regexp.MustCompile("/scenario/(.*)/(.*)/no")
+	executeScriptRegx    = regexp.MustCompile("/script/(.*)/run")
+	reloadScenarios      = regexp.MustCompile("/scenarios/reload")
 )
 
 const (
 	ServiceReq_None = iota
 	ServiceReq_ActivateScenario
 	ServiceReq_ExecuteScript
+	ServiceReq_ReloadScenarios
 )
 
 func DetectServiceRequest(req *http.Request) int {
@@ -24,10 +26,12 @@ func DetectServiceRequest(req *http.Request) int {
 
 	if method == "PUT" {
 		switch {
-		case ActivateScenarioRegx.MatchString(url):
+		case activateScenarioRegx.MatchString(url):
 			return ServiceReq_ActivateScenario
-		case ExecuteScriptRegx.MatchString(url):
+		case executeScriptRegx.MatchString(url):
 			return ServiceReq_ExecuteScript
+		case reloadScenarios.MatchString(url):
+			return ServiceReq_ReloadScenarios
 		}
 	}
 
@@ -45,7 +49,7 @@ type ActivateScenario struct {
 
 func ParseActivateScenarioRequest(req *http.Request) *ActivateScenario {
 	url := req.URL.String()
-	matches := ActivateScenarioRegx.FindStringSubmatch(url)
+	matches := activateScenarioRegx.FindStringSubmatch(url)
 	if len(matches) == 3 {
 		return &ActivateScenario{Scenario: matches[1], Id: matches[2]}
 	}
@@ -63,7 +67,7 @@ type ExecuteScript struct {
 
 func ParseExecuteScriptRequest(req *http.Request) *ExecuteScript {
 	url := req.URL.String()
-	matches := ExecuteScriptRegx.FindStringSubmatch(url)
+	matches := executeScriptRegx.FindStringSubmatch(url)
 	if len(matches) == 2 {
 		var env map[string]string
 

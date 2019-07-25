@@ -81,7 +81,7 @@ var _ = Describe("ScenarioRecorder handler", func() {
 
 				sendRequest("http://test.net/users", 101)
 
-				index, indexErr = storage.LoadIndex2(fs, "test/scenario-1/index.txt", true)
+				index, indexErr = storage.LoadIndex2(fs, "test/scenario-1/index.txt", true, nil)
 			})
 
 			It("should activate scenario", func() {
@@ -108,7 +108,7 @@ var _ = Describe("ScenarioRecorder handler", func() {
 					sendRequest("http://test.net/sessions", 102)
 					sendRequest("http://test.net/events", 103)
 
-					index, indexErr = storage.LoadIndex2(fs, "test/scenario-2/index.txt", true)
+					index, indexErr = storage.LoadIndex2(fs, "test/scenario-2/index.txt", true, nil)
 				})
 
 				It("should load index", func() {
@@ -138,7 +138,7 @@ var _ = Describe("ScenarioRecorder handler", func() {
 
 						sendRequest("http://test.net/info", 110)
 
-						index, indexErr = storage.LoadIndex2(fs, "test/scenario-1/index.txt", true)
+						index, indexErr = storage.LoadIndex2(fs, "test/scenario-1/index.txt", true, nil)
 					})
 
 					It("should load index", func() {
