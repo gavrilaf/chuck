@@ -2,7 +2,7 @@
 
 I have a suggestion that folks don’t use and don’t know the full power of Chuck URL matching. So I decided to write this small cheat sheet.
 
-## 1.Equality
+## 1. Equality
 
 Two URLs are matched if they are equal. Chuck ignores the URL schema and port.
 
@@ -12,7 +12,7 @@ So `https://api.github.com/search/repositories` is matched with:
 - `http://api.github.com/search/repositories` - different schema but still matched
 - `https://api.github.com:443/search/repositories` - port is ignored
 
-## 2.Wildcard
+## 2. Wildcard
 
 `https://api.github.com/users/:username/events` means anything can be instead of **username**.
 `https://api.github.com/users/john-doe/events` has matched with URL above.
@@ -20,11 +20,13 @@ So `https://api.github.com/search/repositories` is matched with:
 ### Important
 
 You are able to add wildcard URL and concrete URLs simultaneously. In this case, the concrete URL always has a bigger priority.
+
 For example, you added two patterns:
 - `https://api.github.com/users/:username/events` 
 - `https://api.github.com/users/peter/events`
 
-- url `https://api.github.com/users/peter/events` will be matched with second patterns 
+And
+- `https://api.github.com/users/peter/events` will be matched with second patterns 
 - `https://api.github.com/users/john/events` with first.
 
 ## 3. Catch-all wildcard
